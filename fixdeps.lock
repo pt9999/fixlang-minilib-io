@@ -15,24 +15,6 @@ repo = "https://github.com/tttmmmyyyy/fixlang-character.git"
 rev = "b52fdfe8f6c0d4470e90da0ff0c83d4ffa06b38e"
 
 [[dependencies]]
-name = "hashmap"
-version = "0.1.0"
-path = ".fixlang/deps/hashmap_0.1.0"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-hashmap.git"
-rev = "4d72be1c1c033b69409a1665fdbd7cebbd08d4cf"
-
-[[dependencies]]
-name = "hash"
-version = "0.1.0"
-path = ".fixlang/deps/hash_0.1.0"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-hash.git"
-rev = "0e05f132ebc9420759a789fcd9e1afa739769c39"
-
-[[dependencies]]
 name = "time"
 version = "0.1.0"
 path = ".fixlang/deps/time_0.1.0"
@@ -59,6 +41,24 @@ path = "../fixlang-minilib-binary"
 name = "minilib-collection"
 version = "0.1.0"
 path = "../fixlang-minilib-collection"
+
+[[dependencies]]
+name = "hashmap"
+version = "0.1.0"
+path = ".fixlang/deps/hashmap_0.1.0"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-hashmap.git"
+rev = "4d72be1c1c033b69409a1665fdbd7cebbd08d4cf"
+
+[[dependencies]]
+name = "hash"
+version = "0.1.0"
+path = ".fixlang/deps/hash_0.1.0"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-hash.git"
+rev = "0e05f132ebc9420759a789fcd9e1afa739769c39"
 
 [[dependencies]]
 name = "asynctask"
