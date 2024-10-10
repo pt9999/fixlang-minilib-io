@@ -1,0 +1,42 @@
+module PlatformTest;
+
+import Minilib.Encoding.Binary;
+import Minilib.IO.Platform;
+import Minilib.Text.StringEx;
+import Minilib.Testing.UnitTest;
+
+test_uname: TestCase;
+test_uname = (
+    make_test("test_uname") $ |_| (
+        let _ = *if false {
+            println(
+                [uname.@sysname, uname.@nodename, uname.@release, uname.@version, uname.@machine]
+                .format("sysname={} nodename={} release={} version={} machine={}")
+            ).lift
+        } else { pure() };
+        let _ = *assert_true("sysname", uname.@sysname != "");
+        let _ = *assert_true("nodename", uname.@nodename != "");
+        let _ = *assert_true("release", uname.@release != "");
+        let _ = *assert_true("version", uname.@version != "");
+        let _ = *assert_true("machine", uname.@machine != "");
+        pure()
+    )
+);
+
+test_byte_order: TestCase;
+test_byte_order = (
+    make_test("test_byte_order") $ |_| (
+        assert_true("byte_order", Platform::byte_order.is_little_endian)
+    )
+);
+
+main: IO ();
+main = (
+    [
+        test_uname,
+        test_byte_order,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

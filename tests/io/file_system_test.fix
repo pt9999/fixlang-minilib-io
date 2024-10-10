@@ -1,0 +1,202 @@
+module FileSystemTest;
+
+import AsyncTask;
+
+import Minilib.IO.FileSystem;
+import Minilib.Text.StringEx;
+import Minilib.Testing.UnitTest;
+import Minilib.Common.TimeEx;
+
+test_fdopen: TestCase;
+test_fdopen = (
+    let testname = "test_fdopen";
+    make_test(testname) $ |_|
+    let path = "/tmp/_test_fdopen.tmp";
+    let fd = *creat(path, /* 0o0644 = */ 420_U32);
+    let fh = *fdopen(fd, "w");
+    let _ = *write_string(fh, "test");
+    let _ = *fflush(fh);
+    let _ = *close_file(fh).lift;
+    let str = *read_file_string(Path::parse(path).as_some);
+    let _ = *unlink(path);
+    let _ = *assert_equal("eq", "test", str);
+    pure()
+);
+
+test_open_pipe: TestCase;
+test_open_pipe = (
+    let testname = "test_open_pipe";
+    make_test(testname) $ |_|
+
+    let max_count = 10;
+    let (read_fh, write_fh) = *open_pipe;
+    let reader: IOFail String = loop_m(
+        Array::empty(max_count), |array|
+        let line = *read_line(read_fh);
+        if line == "" {
+            let _ = *close_file(read_fh).lift;
+            break_m $ array.to_iter.join(",")
+        };
+        //let _ = *println(line.strip_last_newlines).lift;
+        let array = array.push_back(line.strip_last_newlines);
+        continue_m $ array
+    );
+    let reader: IO String = reader.try(|err|
+        let _ = *eprintln("reader: "+ err);
+        pure ("")
+    );
+
+    let writer: IOFail () = loop_m(
+        0, |i|
+        if i > max_count {
+            let _ = *close_file(write_fh).lift;
+            break_m $ ()
+        };
+        let _ = *write_string(write_fh, i.to_string + "\n");
+        let _ = *fflush(write_fh);
+        let _ = *usleep(1000_U32); // 1000 usec = 1 msec
+        continue_m $ i + 1
+    );
+    let writer: IO () = writer.try(|err|
+        eprintln("writer: "+ err)
+    );
+
+    let read_task = *AsyncIOTask::make(reader).lift;
+    let write_task = *AsyncIOTask::make(writer).lift;
+    let _ = write_task.get;
+    let str = read_task.get;
+    //let _ = *println("str="+str).lift;
+    let _ = *assert_equal("eq", "0,1,2,3,4,5,6,7,8,9,10", str);
+    pure()
+);
+
+test_list_dir: TestCase;
+test_list_dir = (
+    let testname = "test_list_dir";
+    make_test(testname) $ |_|
+    let names = *list_dir("tests/io");
+    let contains = |name, names| (
+        names.find_by(|n| n == name).is_some
+    );
+    //let _ = *println(names.to_string).lift;
+    let _ = *assert_true("contains file_system_test.fix", names.contains("file_system_test.fix"));
+    let _ = *assert_true("not contains `.`", !names.contains("."));
+    let _ = *assert_true("not contains `..`", !names.contains(".."));
+    pure()
+);
+
+test_file_directory_exists: TestCase;
+test_file_directory_exists = (
+    let testname = "test_file_directory_exists";
+    make_test(testname) $ |_|
+
+    let dir_path = "tests/io";
+    let file_path = "tests/io/file_system_test.fix";
+    let dir_path_not_exist = dir_path + "_not_exist";
+    let file_path_not_exist = file_path + "_not_exist";
+
+    let test: String -> Bool -> Bool -> IOFail () = (
+        |path, expect_dir_ex, expect_file_ex|
+        let dir_ex = *directory_exists(path).lift;
+        let file_ex = *file_exists(path).lift;
+        let _ = *assert_equal("dir_ex:" + path, expect_dir_ex, dir_ex);
+        let _ = *assert_equal("file_ex:" + path, expect_file_ex, file_ex);
+        pure ()
+    );
+
+    let _ = *test(file_path, false, true);
+    let _ = *test(file_path_not_exist, false, false);
+    let _ = *test(dir_path, true, false);
+    let _ = *test(dir_path_not_exist, false, false);
+    pure()
+);
+
+test_file_stat: TestCase;
+test_file_stat = (
+    let testname = "test_file_stat";
+    make_test(testname) $ |_|
+
+    let file_path = "tests/file_system_test.fix";
+    let file_stat = *stat(file_path);
+    let _ = *println("st_dev=" + file_stat.st_dev.to_string).lift;
+    let _ = *println("st_ino=" + file_stat.st_ino.to_string).lift;
+    let _ = *println("st_nlink=" + file_stat.st_nlink.to_string).lift;
+    let _ = *println("st_mode=" + file_stat.st_mode.to_string).lift;
+    let _ = *println("st_uid=" + file_stat.st_uid.to_string).lift;
+    let _ = *println("st_gid=" + file_stat.st_gid.to_string).lift;
+    let _ = *println("st_rdev=" + file_stat.st_rdev.to_string).lift;
+    let _ = *println("st_size=" + file_stat.st_size.to_string).lift;
+    let _ = *println("st_blksize=" + file_stat.st_blksize.to_string).lift;
+    let _ = *println("st_blocks=" + file_stat.st_blocks.to_string).lift;
+    let _ = *println("st_atime=" + file_stat.st_atime.to_string).lift;
+    let _ = *println("st_mtime=" + file_stat.st_mtime.to_string).lift;
+    let _ = *println("st_ctime=" + file_stat.st_ctime.to_string).lift;
+    pure()
+);
+
+test_find_files: TestCase;
+test_find_files = (
+    let testname = "test_file_stat";
+    make_test(testname) $ |_|
+
+    let dir_path = "tests";
+    let file_paths = *find_files(dir_path);
+
+    let _ = *file_paths.to_iter.fold_m(
+        (), |_, file_path|
+        let actual = *file_exists(file_path).lift;
+        let _ = *assert_equal("file exists", true, actual);
+        pure()  // println(file_path).lift
+    );
+    pure()
+);
+
+test_make_dirs_rmdir: TestCase;
+test_make_dirs_rmdir = (
+    let testname = "test_make_dirs_rmdir";
+    make_test(testname) $ |_|
+
+    let dir_path1 = ".tmp/file_system_test";
+    let dir_path2 = ".tmp/file_system_test/test_make_dirs_rmdir";
+    let _ = *make_dirs(dir_path2, none());
+    let actual = *directory_exists(dir_path2).lift;
+    let _ = *assert_equal("dir exists", true, actual);
+    let _ = *rmdir(dir_path2);
+    let actual = *directory_exists(dir_path2).lift;
+    let _ = *assert_equal("dir exists", false, actual);
+    let _ = *rmdir(dir_path1);
+    let actual = *directory_exists(dir_path1).lift;
+    let _ = *assert_equal("dir exists", false, actual);
+    pure()
+);
+
+test_realpath: TestCase;
+test_realpath = (
+    let testname = "test_realpath";
+    make_test(testname) $ |_|
+    let dir = *Iterator::range(0,20).loop_iter_m(
+        ".", |dir, i|
+        let resolved = *realpath(dir);
+        eval *println((i, dir, resolved).format("{}: {} = {}")).lift;
+        if resolved == "/" { break_m $ dir };
+        continue_m $ dir + "/.."
+    );
+    pure()
+);
+
+main: IO ();
+main = (
+    [
+        test_fdopen,
+        test_open_pipe,
+        test_list_dir,
+        test_file_directory_exists,
+        //test_file_stat,
+        test_find_files,
+        test_make_dirs_rmdir,
+        test_realpath,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

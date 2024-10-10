@@ -1,0 +1,113 @@
+module PathTest;
+
+import Character;
+import HashMap;
+
+import Minilib.IO.Path;
+import Minilib.Text.StringEx;
+import Minilib.Testing.UnitTest;
+
+test_join_paths: TestCase;
+test_join_paths = (
+    make_table_test("test_join_paths",
+        [
+            ([], ""),
+            ([""], ""),
+            (["/"], "/"),
+            (["/", "/"], "/"),
+            (["/", "a"], "/a"),
+            (["/", "/a"], "/a"),
+            (["a"], "a"),
+            (["a", "b", "c"], "a/b/c"),
+            (["/a/b/", "/c/d/", "/e/f/"], "/a/b/c/d/e/f/"),
+            (["a/b", "", "c/d", "", "e/f"], "a/b/c/d/e/f")
+        ],
+        |(path_segments, expected)|
+        assert_equal("eq", expected, join_paths(path_segments))
+    )
+);
+
+test_basename: TestCase;
+test_basename = (
+    make_table_test("test_basename",
+        [
+            ("", ""),
+            ("/", ""),
+            ("/a", "a"),
+            ("/a/", "a"),
+            ("/a//", "a"),
+            ("/a/b", "b"),
+            ("/a/b/", "b"),
+            ("//a//b//", "b"),
+            ("/a/b/c", "c"),
+            ("a", "a"),
+            ("a/b", "b"),
+            ("a/b/", "b"),
+            ("a/b/c/", "c")
+        ],
+        |(path, expected)|
+        assert_equal("eq", expected, basename(path))
+    )
+);
+
+test_dirname: TestCase;
+test_dirname = (
+    make_table_test("test_dirname",
+        [
+            ("", "."),
+            ("/", "/"),
+            ("/a", "/"),
+            ("/a/", "/"),
+            ("/a/b", "/a"),
+            ("/a/b/", "/a"),
+            ("/a/b/c", "/a/b"),
+            ("a", "."),
+            ("a/b", "a"),
+            ("a/b/", "a"),
+            ("a/b/c/", "a/b")
+        ],
+        |(path, expected)|
+        assert_equal("eq", expected, dirname(path))
+    )
+);
+
+test_relativize: TestCase;
+test_relativize = (
+    make_table_test("test_relativize",
+        [
+            ("", "", ok $ ""),
+            ("", "a", ok $ "a"),
+            ("", "a/b", ok $ "a/b"),
+            ("a/b", "a/b", ok $ ""),
+            ("a/b", "a/b/c", ok $ "c"),
+            ("a/b", "a/b/c/d", ok $ "c/d"),
+            ("a///b", "a//b//c//d//", ok $ "c/d"),
+            ("a/b", "c/d", ok $ "../../c/d"),
+            ("/", "/", ok $ ""),
+            ("/", "/a", ok $ "a"),
+            ("/a", "/", ok $ ".."),
+            ("/a/b", "/a/b", ok $ ""),
+            ("/a/b", "/a/b/c/d/", ok $ "c/d"),
+            ("/a/b", "/a/c/d/", ok $ "../c/d"),
+            ("//a//b//", "//a//c//d", ok $ "../c/d"),
+            ("/a/b", "c/d", err $ "different type of path"),
+            ("a/b", "/c/d", err $ "different type of path"),
+        ],
+        |(base, target, expected)|
+        let actual = base.relativize(target);
+        assert_equal("eq", expected, actual)
+    )
+);
+
+main: IO ();
+main = (
+    [
+        test_join_paths,
+        test_basename,
+        test_dirname,
+        test_relativize,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

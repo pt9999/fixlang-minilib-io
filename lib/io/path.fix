@@ -1,0 +1,83 @@
+// File Path handling, such as joining paths and retrieving directory name.
+module Minilib.IO.Path;
+
+import Minilib.Text.StringEx;
+
+// Checks if the byte is a path separator. Currently only '/' is supported.
+is_path_sep: U8 -> Bool;
+is_path_sep = |c| c == '/';
+
+// `join_paths(path_segments)` joins segments into a path.
+join_paths: Array String -> String;
+join_paths = |path_segments| (
+    path_segments.to_iter.fold(
+        "", |result, segment|
+        if result == "" {
+            segment
+        };
+        let result = result.strip_last_bytes(is_path_sep);
+        let segment = segment.strip_first_bytes(is_path_sep);
+        result + "/" + segment
+    )
+);
+
+// `basename(path)` returns the last non-slash component. The trailing slashes are removed.
+basename: String -> String;
+basename = |path| (
+    let path = path.strip_last_bytes(is_path_sep);
+    let opt = path.find_last_byte('/');
+    if opt.is_none {
+        path
+    };
+    let name = path.substring(opt.as_some + 1, path.get_size);
+    name
+);
+
+// `dirname(path)` returns the path with its last non-slash component and trailing slashes removed.
+// if `path` contains no `/`s, returns `"."`.
+dirname: String -> String;
+dirname = |path| (
+    if path == "" {
+        "."
+    };
+    let path = path.strip_last_bytes(is_path_sep);
+    if path == "" {
+        "/"
+    };
+    let opt = path.find_last_byte('/');
+    if opt.is_none {
+        "."
+    };
+    if opt.as_some == 0 {
+        "/"
+    };
+    let parent_dir = path.substring(0, opt.as_some);
+    parent_dir
+);
+
+// `base.relativize(target)` constructs a relative path from `base` to `target`.
+// `base` and `target` should have the same type (i.e. relative path or absolute path).
+// If only one of `base` and `target` is an absolute path, "different type of path" error is returned.
+// If `base` == `target`, then an empty string is returned.
+relativize: String -> String -> Result ErrMsg String;
+relativize = |target, base| (
+    let base_root = base.starts_with("/");
+    let target_root = target.starts_with("/");
+    if base_root != target_root {
+        err $ "different type of path"
+    };
+    let bases = base.split_ex("/").filter(|s| !s.is_empty).to_array;
+    let targets = target.split_ex("/").filter(|s| !s.is_empty).to_array;
+    let i = loop(
+        0, |i|
+        if i >= bases.get_size { break $ i };
+        if i >= targets.get_size { break $ i };
+        if bases.@(i) != targets.@(i) { break $ i };
+        continue $ i + 1
+    );
+    let output = Array::fill(bases.get_size - i, "..");
+    let output = output.append(targets.subarray(i, targets.get_size));
+    let output = output.to_iter.join("/");
+    ok $ output
+);
+

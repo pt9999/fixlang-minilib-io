@@ -1,0 +1,89 @@
+// Get kernel information such as system name, machine archtecture.
+module Minilib.IO.Platform;
+
+
+import Minilib.Encoding.Binary;
+import Minilib.Text.StringEx;
+
+// A type of name and information of current kernel.
+type UName = unbox struct {
+    sysname: String,
+    nodename: String,
+    release: String,
+    version: String,
+    machine: String
+};
+
+// The name and information of current kernel.
+// Calls POSIX C function `uname()`, and split the result by null characters.
+// NOTE: The system information does not change during program execution,
+// so this variable is constant.
+uname: UName;
+uname = (
+    let buf = Array::fill(4096, 0_U8);
+    let res = buf.borrow_ptr(|p_buf|
+        FFI_CALL[I32 uname(Ptr), p_buf]
+    );
+    eval assert (|_| "uname failed!: some error occurred in uname.", res == 0_I32);
+    /*
+    let dump = buf.to_iter.zip(Iterator::count_up(0)).fold(
+        Array::empty(0), |dump, (b, i)|
+        let dump = dump.push_back(encode_hex_char(b.shift_left(4_U8).bit_and(15_U8)))
+            .push_back(encode_hex_char(b.bit_and(15_U8)));
+        if i % 16 == 15 { dump.push_back('\n') } else { dump }
+    )._unsafe_to_string;
+    eval debug_println(dump);
+    */
+    let find_from_start_by = |start, cond, arr| (
+        let len = arr.Array::get_size;
+        loop(start, |idx| (
+            if idx == len { break $ Option::none $ () };
+            if cond(arr.@(idx)) { break $ Option::some $ idx };
+            continue $ idx + 1
+        ))
+    );
+    let names = loop(
+        ([], 0), |(names, start)|
+        let start = buf.find_from_start_by(start, |b| b != 0_U8);
+        if start.is_none {
+            break $ names
+        };
+        let start = start.as_some;
+        let end = buf.find_from_start_by(start, |b| b == 0_U8).map_or(
+            buf.get_size,
+            |end| end
+        );
+        let name = buf.get_sub(start, end)._unsafe_to_string;
+        let names = names.push_back(name);
+        continue $ (names, end)
+    );
+    // Probably splitted to `[sysname, nodename, release, version, machine]`.
+    //eval debug_println("uname="+names.to_string);
+
+    UName {
+        sysname: names.@(0),
+        nodename: names.@(1),
+        release: names.@(2),
+        version: names.@(3),
+        machine: names.@(4)
+    }
+);
+
+// The byte order of platform.
+byte_order: ByteOrder;
+byte_order = (
+    let uts = Platform::uname;
+    // aarch64-linux-gnu (ChromeBook, Debian 11)
+    if uts.@sysname == "Linux" && uts.@machine == "aarch64" {
+        ByteOrder::little_endian()
+    };
+    // x86_64-linux-gnu (WSL 2, Ubuntu 22.04)
+    if uts.@sysname == "Linux" && uts.@machine == "x86_64" {
+        ByteOrder::little_endian()
+    };
+    eval assert (|_|
+        "Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine,
+        false
+    );
+    ByteOrder::little_endian()
+);

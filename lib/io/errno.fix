@@ -1,0 +1,49 @@
+// Functions for `errno` which is set by system calls and some library functions.
+module Minilib.IO.Errno;
+
+// Clears `errno`, the global variable that stores the last error number.
+clear_errno: IO ();
+clear_errno = (
+    eval *pure();
+    pure $ unsafe_clear_errno()
+);
+
+// Gets the last error number from `errno`.
+get_errno: IO CInt;
+get_errno = (
+    eval *pure();
+    pure $ unsafe_get_errno()
+);
+
+// Gets the error message corresponding to the last error number.
+get_last_error: IO String;
+get_last_error = (
+    let errno = *get_errno;
+    strerror(errno)
+);
+
+// Converts the error number returned by `get_errno` to a string.
+// This function may have race conditions, but is more portable.
+strerror: CInt -> IO String;
+strerror = |errno| (
+    eval *pure();
+    let pstr = FFI_CALL[Ptr strerror(CInt), errno];
+    pure $ pstr._unsafe_from_c_str_ptr
+);
+
+// Converts the error number returned by `get_errno` to a string.
+// This function has no race conditions, but is less portable.  (This function is GNU C library specific)
+strerror_r: CInt -> IO String;
+strerror_r = |errno| (
+    eval *pure();
+    let bufsize = 1024;
+    let buf = Array::fill(bufsize, 0_U8);
+    let errmes = buf.borrow_ptr(|p_buf|
+        let pstr = FFI_CALL[Ptr strerror_r(CInt, Ptr, CSizeT), errno, p_buf, bufsize.to_CSizeT];
+        // GNU version of strerror_r() sometimes does not change the contents of p_buf.
+        // Only the return value is set properly.
+        // But this is not portable.
+        pstr._unsafe_from_c_str_ptr
+    );
+    pure $ errmes
+);

@@ -1,0 +1,44 @@
+[general]
+name = "minilib-io"
+version = "0.1.0"
+
+[build]
+opt_level = "separated"
+files = [
+    "lib/io/channel.fix",
+    "lib/io/errno.fix",
+    "lib/io/file_system.fix",
+    "lib/io/path.fix",
+    "lib/io/platform.fix",
+]
+
+[build.test]
+opt_level = "separated"
+files = [
+    "tests/test.fix",
+    "tests/io/channel_test.fix",
+    "tests/io/file_system_test.fix",
+    "tests/io/path_test.fix",
+    "tests/io/platform_test.fix",
+]
+
+[[dependencies]]
+name = "minilib-common"
+version = "*"
+path = "../fixlang-minilib-common"
+
+[[dependencies]]
+name = "minilib-binary"
+version = "*"
+path = "../fixlang-minilib-binary"
+
+# for deque
+[[dependencies]]
+name = "minilib-collection"
+version = "*"
+path = "../fixlang-minilib-collection"
+
+[[dependencies]]
+name = "asynctask"
+version = "*"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }

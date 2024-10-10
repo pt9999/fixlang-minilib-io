@@ -1,0 +1,455 @@
+// File system module. For example, finding files, checks if file or directory exists,
+// getting file size and last modified time.
+module Minilib.IO.FileSystem;
+
+
+import Minilib.Encoding.Binary;
+import Minilib.IO.Errno;
+import Minilib.IO.Platform;
+import Minilib.IO.Path;
+import Minilib.Text.StringEx;
+
+//--------------------------------------------------------------------------
+//  File status
+//--------------------------------------------------------------------------
+
+// Returns true if the specified file exists.
+file_exists: String -> IO Bool;
+file_exists = |file_path| (
+    let res = *stat(file_path).to_result;
+    if res.is_err {
+        pure $ false
+    };
+    let file_stat = res.as_ok;
+    pure $ file_stat.is_file
+);
+
+// Returns true if the specified directory exists.
+directory_exists: String -> IO Bool;
+directory_exists = |dir_path| (
+    let res = *stat(dir_path).to_result;
+    if res.is_err {
+        pure $ false
+    };
+    let file_stat = res.as_ok;
+    pure $ file_stat.is_dir
+);
+
+
+// Type of file status
+type FileStat = unbox struct {
+    data: ByteBuffer  // struct stat
+};
+
+namespace FileStat {
+    // `stat(file_path)` retrieves information about the file pointed to by `file_path`.
+    stat: String -> IOFail FileStat;
+    stat = |file_path| (
+        let _ = *pure(); // make it lazy
+        let statbuf = ByteBuffer::fill(_def_struct_stat.@sizeof_struct_stat, 0_U8, Platform::byte_order);
+        eval *clear_errno.lift;
+        let res = statbuf.borrow_ptr(|p_stat|
+            file_path.borrow_c_str(|p_filepath|
+                    FFI_CALL[I32 stat(Ptr, Ptr), p_filepath, p_stat]
+            )
+        );
+        if res != 0_I32 {
+            throw("stat failed!: " + *get_last_error.lift)
+        };
+        pure $ FileStat { data: statbuf }
+    );
+
+    // Returns true if it is a regular file.
+    is_file: FileStat -> Bool;
+    is_file = |file_stat| file_stat.st_mode.bit_and(/* 0o0170000 = */ 61440_U32) ==
+                        /* 0o0100000 = */ 32768_U32;
+
+    // Returns true if it is a directory.
+    is_dir: FileStat -> Bool;
+    is_dir = |file_stat| file_stat.st_mode.bit_and(/* 0o0170000 = */ 61440_U32) ==
+                        /* 0o0040000 = */ 16384_U32;
+
+    st_dev: FileStat -> U64;
+    st_dev = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_dev);
+
+    st_ino: FileStat -> U64;
+    st_ino = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_ino);
+
+    st_nlink: FileStat -> U64;
+    st_nlink = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_nlink);
+
+    st_mode: FileStat -> U32;
+    st_mode = |file_stat| file_stat.@data.get_u32(_def_struct_stat.@offsetof_st_mode);
+
+    st_uid: FileStat -> U32;
+    st_uid = |file_stat| file_stat.@data.get_u32(_def_struct_stat.@offsetof_st_uid);
+
+    st_gid: FileStat -> U32;
+    st_gid = |file_stat| file_stat.@data.get_u32(_def_struct_stat.@offsetof_st_gid);
+
+    st_rdev: FileStat -> U64;
+    st_rdev = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_rdev);
+
+    st_size: FileStat -> I64;
+    st_size = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_size).to_I64;
+
+    st_blksize: FileStat -> I64;
+    st_blksize = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_blksize).to_I64;
+
+    st_blocks: FileStat -> U64;
+    st_blocks = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_blocks);
+
+    st_atime: FileStat -> U64;
+    st_atime = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_atime);
+
+    st_mtime: FileStat -> U64;
+    st_mtime = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_mtime);
+
+    st_ctime: FileStat -> U64;
+    st_ctime = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_ctime);
+}
+
+
+// [nofixdoc] A type that represents size info of `struct stat`.
+type DefStructStat = unbox struct {
+    offsetof_st_dev: I64,
+    offsetof_st_ino: I64,
+    offsetof_st_nlink: I64,
+    offsetof_st_mode: I64,
+    offsetof_st_uid: I64,
+    offsetof_st_gid: I64,
+    offsetof_st_rdev: I64,
+    offsetof_st_size: I64,
+    offsetof_st_blksize: I64,
+    offsetof_st_blocks: I64,
+    offsetof_st_atime: I64,
+    offsetof_st_mtime: I64,
+    offsetof_st_ctime: I64,
+    sizeof_struct_stat: I64
+};
+
+// NOTE: the system information does not change during program execution,
+// so this variable is constant.
+_def_struct_stat: DefStructStat;
+_def_struct_stat = (
+    let uts = Platform::uname;
+    // aarch64-linux-gnu (ChromeBook, Debian 11)
+    if uts.@sysname == "Linux" && uts.@machine == "aarch64" {
+        // aarch64-linux-gnu
+        DefStructStat {
+            offsetof_st_dev: 0,
+            offsetof_st_ino: 8,
+            offsetof_st_nlink: 20,
+            offsetof_st_mode: 16,
+            offsetof_st_uid: 24,
+            offsetof_st_gid: 28,
+            offsetof_st_rdev: 32,
+            offsetof_st_size: 48,
+            offsetof_st_blksize: 56,
+            offsetof_st_blocks: 64,
+            offsetof_st_atime: 72,
+            offsetof_st_mtime: 88,
+            offsetof_st_ctime: 104,
+            sizeof_struct_stat: 128
+        }
+    };
+    eval assert (|_|
+        "Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine,
+        uts.@sysname == "Linux" && uts.@machine == "x86_64"
+    );
+    // x86_64-linux-gnu (WSL 2, Ubuntu 22.04)
+    DefStructStat {
+        offsetof_st_dev: 0,
+        offsetof_st_ino: 8,
+        offsetof_st_nlink: 16,
+        offsetof_st_mode: 24,
+        offsetof_st_uid: 28,
+        offsetof_st_gid: 32,
+        offsetof_st_rdev: 40,
+        offsetof_st_size: 48,
+        offsetof_st_blksize: 56,
+        offsetof_st_blocks: 64,
+        offsetof_st_atime: 72,
+        offsetof_st_mtime: 88,
+        offsetof_st_ctime: 104,
+        sizeof_struct_stat: 144
+    }
+);
+
+//--------------------------------------------------------------------------
+//  Finding files
+//--------------------------------------------------------------------------
+
+// `find_files(dir_path)` finds all files under
+// specified directory and its subdirectories.
+find_files: String -> IOFail (Array String);
+find_files = |dir_path| (
+    let dir_path = if dir_path.ends_with("/") { dir_path } else { dir_path + "/" };
+    let output = Array::empty(10);
+    let files = *list_dir(dir_path);
+    files.to_iter.loop_iter_m(
+        output, |output, file|
+        let file_path = dir_path + file;
+        if *directory_exists(file_path).lift {
+            let output = output.append(*find_files(file_path));
+            continue_m $ output
+        };
+        if *file_exists(file_path).lift {
+            let output = output.push_back(file_path);
+            continue_m $ output
+        };
+        continue_m $ output
+    )
+);
+
+// Lists a directory.
+// Returns filenames in the specified directory.
+// The filenames will be sorted in lexicographical order.
+list_dir: String -> IOFail (Array String);
+list_dir = |dirpath| (
+    let _ = *pure();    // make it lazy
+    let dir_handle = *_opendir(dirpath);
+    let names: Array String = Array::empty(10);
+    let names = *loop_m(
+        names, |names|
+        let name = *_readdir(dir_handle);
+        if name == "" {
+            break_m $ names
+        };
+        if name == "." || name == ".." {
+            continue_m $ names
+        };
+        let names = names.push_back(name);
+        continue_m $ names
+    );
+    let names = names.sort_by(|(a,b)| a < b);
+    pure $ names
+);
+
+// [nofixdoc] Type of a directory handle
+type DirHandle = unbox struct {
+    dtor: Destructor Ptr
+};
+
+_opendir: String -> IOFail DirHandle;
+_opendir = |dir_path| (
+    eval *clear_errno.lift;
+    let dirp = dir_path.borrow_c_str(|p_path|
+        FFI_CALL[Ptr opendir(Ptr), p_path]
+    );
+    if dirp == nullptr {
+        throw("opendir failed!: " + *get_last_error.lift
+                + "\ndir_path=" + dir_path)
+    };
+    pure $ DirHandle {
+        dtor: Destructor::make(dirp, |dirp|
+            //eval debug_eprintln ("closing dir handle");
+            eval clear_errno._unsafe_perform;
+            let res = FFI_CALL[I32 closedir(Ptr), dirp];
+            if res != 0_I32 {
+                debug_eprintln("closedir failed!: " + get_last_error._unsafe_perform)
+            } else {
+                ()
+            }
+        )
+    }
+);
+
+_readdir: DirHandle -> IOFail String;
+_readdir = |dir_handle| (
+    let dirent: Ptr = dir_handle.@dtor.borrow(|dirp|
+        FFI_CALL[Ptr readdir(Ptr), dirp]
+    );
+    if dirent == nullptr {
+        // The end of directory stream is reached (`errno` is not changed),
+        // or an error occured (`errno` is set).
+        // We cannot get or set `errno`, so simply ignore errors.
+        pure $ ""
+    };
+
+    //   struct dirent {
+    //       ino_t          d_ino;       /* Inode number */
+    //       off_t          d_off;       /* Not an offset; see below */
+    //       unsigned short d_reclen;    /* Length of this record */
+    //       unsigned char  d_type;      /* Type of file; not supported
+    //                                      by all filesystem types */
+    //       char           d_name[256]; /* Null-terminated filename */
+    //   };
+    // (offset of d_name) = sizeof(ino_t) + sizeof(off_t) + 2 + 1
+    //                    = 8 + 8 + 2 + 1 = 19
+    let d_name: Ptr = dirent.add_offset(19);
+    let name = String::_unsafe_from_c_str_ptr(d_name);
+    pure $ name
+);
+
+//--------------------------------------------------------------------------
+//  Directory
+//--------------------------------------------------------------------------
+
+// `make_dirs(dir_path, mode)` creates specified directory
+// as well as its parent directories recursively.
+// If the directory already exists, it does nothing.
+// If `mode` is `none()`, octal 0777 is used as a mode.
+// This mode is modified by the process's umask in the usual way.
+make_dirs: String -> Option U32 -> IOFail ();
+make_dirs = |dir_path, mode| (
+    if *directory_exists(dir_path).lift {
+        pure()
+    };
+    let parent_dir = dirname(dir_path);
+    let _ = *if parent_dir == dir_path {
+        pure()  // avoid infinite loop
+    } else {
+        make_dirs(parent_dir, mode)
+    };
+    mkdir(dir_path, mode)
+);
+
+// `mkdir(path, mode)` creates a directory.
+// If `mode` is `none()`, octal 0777 is used as a mode.
+// This mode is modified by the process's umask in the usual way.
+mkdir: String -> Option U32 -> IOFail ();
+mkdir = |path, mode| (
+    eval *clear_errno.lift;
+    let mode = if mode.is_some { mode.as_some } else { /* 0777 = */ 511_U32 };
+    let res = path.borrow_c_str(|p_path|
+        FFI_CALL[I32 mkdir(Ptr, U32), p_path, mode]
+    );
+    if res != 0_I32 {
+        throw("mkdir failed!: " + *get_last_error.lift)
+    };
+    pure()
+);
+
+// `rmdir(path)` deletes a directory, which must be empty.
+rmdir: String -> IOFail ();
+rmdir = |path| (
+    eval *clear_errno.lift;
+    let res = path.borrow_c_str(|p_path|
+        FFI_CALL[I32 rmdir(Ptr), p_path]
+    );
+    if res != 0_I32 {
+        throw("rmdir failed!: " + *get_last_error.lift)
+    };
+    pure()
+);
+
+
+//--------------------------------------------------------------------------
+//  Files
+//--------------------------------------------------------------------------
+
+// Flushes a file stream.
+// For details, see Linux manual page for [fflush()](https://man7.org/linux/man-pages/man3/fflush.3.html).
+fflush : IOHandle -> IOFail ();
+fflush = |handle| (
+    eval *clear_errno.lift;
+    let res = FFI_CALL[I32 fflush(Ptr), handle._file_ptr];
+    if res < 0_I32 {
+        throw("fflush failed!: " + *get_last_error.lift)
+    };
+    pure()
+);
+
+// Sets IOHandle to unbuffered mode.
+// For detials, see Linux manual page for [setbuf()](https://man7.org/linux/man-pages/man3/setbuf.3.html).
+// NOTE: When a fix program is invoked by `run_with_stream()`,
+//       then the stdout and stderr becomes not a TTY but a file stream.
+//       So the stdout becomes block-buffered. The stderr also seems to be block-buffered.
+set_unbuffered_mode: IOHandle -> IO ();
+set_unbuffered_mode = |handle| (
+    let _ = *pure();
+    eval FFI_CALL[() setbuf(Ptr, Ptr), handle._file_ptr, nullptr];
+    pure()
+);
+
+// Returns the canonicalized absolute pathname.
+// For detials, see Linux manual page for [realpath()](https://man7.org/linux/man-pages/man3/realpath.3.html).
+realpath: String -> IOFail String;
+realpath = |path| (
+    let p_resolved: Ptr = path.borrow_c_str(|p_path|
+        FFI_CALL[Ptr realpath(Ptr, Ptr), p_path, nullptr]
+    );
+    if p_resolved == nullptr {
+        throw("realpath failed!: " + *get_last_error.lift + ": path=" + path)
+    };
+    let resolved: String = String::_unsafe_from_c_str_ptr(p_resolved);
+    eval FFI_CALL[() free(Ptr), p_resolved];
+    pure $ resolved
+);
+
+// Creates a new file or rewrites an existing one.
+// For details, see Linux manual page for [creat()](https://man7.org/linux/man-pages/man3/creat.3p.html).
+creat: String -> U32 -> IOFail I32;
+creat = |path, mode| (
+    let _ = *pure();    // make it lazy
+    eval *clear_errno.lift;
+    let fd = path.borrow_c_str(|p_path|
+        FFI_CALL[I32 creat(Ptr, U32), p_path, mode]
+    );
+    if fd == -1_I32 {
+        throw("creat failed!: " + *get_last_error.lift)
+    };
+    pure $ fd
+);
+
+// Deletes a name from the filesystem and possibly the file it refers to.
+// For details, see Linux manual page for [unlink()](https://man7.org/linux/man-pages/man2/unlink.2.html).
+unlink: String -> IOFail ();
+unlink = |path| (
+    let _ = *pure();    // make it lazy
+    eval *clear_errno.lift;
+    let res = path.borrow_c_str(|p_path|
+        FFI_CALL[I32 unlink(Ptr), p_path]
+    );
+    if res == -1_I32 {
+        throw("unlink failed!: " + *get_last_error.lift)
+    };
+    pure()
+);
+
+// Associates a stream with a file descriptor.
+// For details, see Linux manual page for [fdopen()](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
+fdopen: I32 -> String -> IOFail IOHandle;
+fdopen = |fd, mode| (
+    let _ = *pure();    // make it lazy
+    eval *clear_errno.lift;
+    let file_ptr = mode.borrow_c_str(|p_mode|
+        FFI_CALL[Ptr fdopen(I32, Ptr), fd, p_mode]
+    );
+    if file_ptr == nullptr {
+        throw("fdopen failed!: " + *get_last_error.lift)
+    };
+    pure $ IOHandle::from_file_ptr $ file_ptr
+);
+
+
+// Creates a pipe. It returns `(read_fd, write_fd)` where `read_fd` is the file descriptor of
+// read-end of the pipe, and `write_fd` is the file descriptor of write-end of the pipe.
+// For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
+pipe: IOFail (I32, I32);
+pipe = (
+    let _ = *pure();    // make it lazy
+    let pipefd: Array I32 = Array::fill(2, 0_I32);
+    eval *clear_errno.lift;
+    let res = pipefd.borrow_ptr(|p_pipefd|
+        FFI_CALL[I32 pipe(Ptr), p_pipefd]
+    );
+    if res == -1_I32 {
+        throw("pipe failed!: " + *get_last_error.lift)
+    };
+    let read_fd = pipefd.@(0);
+    let write_fd = pipefd.@(1);
+    pure $ (read_fd, write_fd)
+);
+
+// Creates a pipe stream. It returns `(read_fh, write_fh)` where `read_fd` is the stream of
+// read-end of the pipe, and `write_fd` is the stream of write-end of the pipe.
+// For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
+open_pipe: IOFail (IOHandle, IOHandle);
+open_pipe = (
+    let (read_fd, write_fd) = *pipe;
+    let read_fh = *fdopen(read_fd, "r");
+    let write_fh = *fdopen(write_fd, "w");
+    pure $ (read_fh, write_fh)
+);

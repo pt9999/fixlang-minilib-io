@@ -1,0 +1,143 @@
+module ChannelTest;
+
+import AsyncTask;
+
+import Minilib.IO.Channel;
+import Minilib.IO.FileSystem;
+import Minilib.Monad.FunctorM;
+import Minilib.Text.StringEx;
+import Minilib.Testing.UnitTest;
+import Minilib.Common.TimeEx;
+
+test_send: TestCase;
+test_send = (
+    make_test("test_send") $ |_|
+    let chan = *Channel::make.lift;
+    let _ = *chan.send(1);
+    let _ = *chan.close.lift;
+    // send() fails after close
+    let res = *chan.send(2).to_result.lift;
+    let _ = *assert_equal("err", err $ Channel::closed_error, res);
+    pure()
+);
+
+test_send_mux: TestCase;
+test_send_mux = (
+    make_test("test_send_mux") $ |_|
+    let chan = *Channel::make.lift;
+    let sender = do {
+        Iterator::range(0,5).foreach_m(|i|
+            chan.send(i+1)
+        )
+    }.to_result;
+    let receiver = do {
+        Iterator::range(0, 10).fold_m(
+        0, |sum, _|
+           pure $ sum + *chan.recv
+        )
+    }.to_result;
+    let task1 = *AsyncIOTask::make(sender).lift;
+    let task2 = *AsyncIOTask::make(sender).lift;
+    let task3 = *AsyncIOTask::make(receiver).lift;
+    let _ = *assert_equal("res1", ok(), task1.get);
+    let _ = *assert_equal("res2", ok(), task2.get);
+    let _ = *assert_equal("res3", ok((1+2+3+4+5)*2), task3.get);
+    pure()
+);
+
+test_recv: TestCase;
+test_recv = (
+    make_test("test_recv") $ |_|
+    let var = *Var::make(0).lift;
+    let chan1: Channel String = *Channel::make.lift;
+    let chan2: Channel String = *Channel::make.lift;
+    let io1 = do {
+        let _ = *var.Var::set(1).lift;
+        let a = *chan1.recv;
+        let _ = *var.Var::set(2).lift;
+        let _ = *chan2.send(a);
+        let a = *chan1.recv;
+        let _ = *var.Var::set(3).lift;
+        let _ = *chan2.send(a);
+        pure $ ()
+    }.to_result;
+    let task1 = *AsyncIOTask::make(io1).lift;
+    let _ = *usleep(100000_U32);
+    let _ = *assert_equal("var", 1, *var.get.lift);
+    let _ = *chan1.send("hello");
+    let _ = *chan1.send("world");
+    let _ = *assert_equal("chan2", "hello", *chan2.recv);
+    let _ = *assert_equal("chan2", "world", *chan2.recv);
+    let _ = *assert_equal("var", 3, *var.get.lift);
+    let _ = *assert_equal("res1", ok(), task1.get);
+    pure()
+);
+
+test_recv_close: TestCase;
+test_recv_close = (
+    make_test("test_recv_close") $ |_|
+    let chan1: Channel String = *Channel::make.lift;
+    let io1 = do {
+        let a = *chan1.recv;
+        pure $ ()
+    }.to_result;
+    let task1 = *AsyncIOTask::make(io1).lift;
+    let _ = *usleep(100000_U32);
+    let _ = *chan1.close.lift;
+    let _ = *assert_equal("res1", err(Channel::closed_error), task1.get);
+    pure()
+);
+
+test_recv_mux: TestCase;
+test_recv_mux = (
+    make_test("test_recv_mux") $ |_|
+    let chan = *Channel::make.lift;
+    let sender = do {
+        Iterator::range(0,10).foreach_m(|i|
+            chan.send(i+1)
+        )
+    }.to_result;
+    let receiver = do {
+        Iterator::range(0, 5).fold_m(
+        0, |sum, _|
+           pure $ sum + *chan.recv
+        )
+    }.to_result;
+    let task1 = *AsyncIOTask::make(sender).lift;
+    let task2 = *AsyncIOTask::make(receiver).lift;
+    let task3 = *AsyncIOTask::make(receiver).lift;
+    let _ = *assert_equal("res1", ok(), task1.get);
+    let total2 = task2.get;
+    let total3 = task3.get;
+    let _ = *assert_equal("total", 55, total2.as_ok + total3.as_ok);
+    pure()
+);
+
+
+test_clear: TestCase;
+test_clear = (
+    make_test("test_clear") $ |_|
+    let chan = *Channel::make.lift;
+    let _ = *chan.send(1);
+    let _ = *chan.send(2);
+    let _ = *chan.clear.lift;
+    let _ = *chan.send(3);
+    let _ = *chan.send(4);
+    let _ = *assert_equal("3", 3, *chan.recv);
+    let _ = *assert_equal("4", 4, *chan.recv);
+    pure()
+);
+
+main: IO ();
+main = (
+    [
+        test_send,
+        test_send_mux,
+        test_recv,
+        test_recv_close,
+        test_recv_mux,
+        test_clear,
+        TestCase::empty
+    ].run_test_driver
+);
+

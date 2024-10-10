@@ -1,0 +1,126 @@
+// A Channel that can be used for the communication of threads.
+module Minilib.IO.Channel;
+
+import AsyncTask;
+
+import Minilib.Collection.Deque;
+
+// A Channel that can be used for the communication of threads.
+type Channel a = unbox struct {
+    var: Var (ChannelData a)
+};
+
+// The channel data
+type ChannelData a = unbox struct {
+    deque: Deque a,     // the queue
+    closed: Bool        // true iff the channel is closed
+};
+
+// `Channel::make` creates a new channel.
+make: IO (Channel a);
+make = (
+    let _ = *pure();        // make it lazy
+    let chan_data = ChannelData {
+        deque: Deque::empty(0),
+        closed: false
+    };
+    let var = *Var::make(chan_data);
+    pure $ Channel { var: var }
+);
+
+// `channel.clear` clears the queue of the channel.
+clear: Channel a -> IO ();
+clear = |chan| (
+    chan.@var.mod(set_deque(Deque::empty(0)))
+);
+
+// `channel.take_and_clear` takes all items away from the queue of the channel
+// and clears the queue.
+// This function can be used after the channel is closed.
+take_and_clear: Channel a -> IO (Iterator a);
+take_and_clear = |chan| (
+    chan.@var.lock(
+        |data|
+        let iter = data.@deque.to_iter;
+        let _ = *chan.@var.mod(set_deque(Deque::empty(0)));
+        pure $ iter
+    )
+);
+
+// `channel.close` closes a channel.
+// After close, `send()` will fail.
+close: Channel a -> IO ();
+close = |chan| (
+    chan.@var.mod(set_closed(true))
+);
+
+// `channel.is_closed` checks whether the channel is closed.
+is_closed: Channel a -> IO Bool;
+is_closed = |chan| (
+    let data = *chan.@var.get;
+    pure $ data.@closed
+);
+
+// `channel.is_empty` checks whether the queue of the channel is empty.
+is_empty: Channel a -> IO Bool;
+is_empty = |chan| (
+    let data = *chan.@var.get;
+    pure $ data.@deque.is_empty
+);
+
+// `channel.send(a)` sends a data to the queue of the channel.
+// If the channel is closed, it throws `closed_error`.
+send: a -> Channel a -> IOFail ();
+send = |a, chan| (
+    chan.@var.lock(
+        |data|
+        if data.@closed {
+            pure $ err $ closed_error
+        };
+        let data = data.mod_deque(push_back(a));
+        let _ = *chan.@var.Var::set(data);
+        pure $ ok $ ()
+    ).lift.bind(from_result)
+);
+
+// `channel.recv` receives a data from the queue of the channel.
+// If the queue is empty, it waits until any data is sent, or the channel is closed.
+// If the channel is closed and the queue is empty, it throws `closed_error`.
+recv: Channel a -> IOFail a;
+recv = |chan| (
+    chan.@var.wait_and_lock(
+        |data| data.@closed || !data.@deque.is_empty,
+        |data|
+        if data.@closed && data.@deque.is_empty {
+            pure $ err $ closed_error
+        };
+        let a = data.@deque.get_front.as_some;
+        let data = data.mod_deque(pop_front);
+        let _ = *chan.@var.Var::set(data);
+        pure $ ok $ a
+    ).lift.bind(from_result)
+);
+
+// `channel.recv` tries to receive a data from a channel.
+// If there is no data, `none` is returned.
+// If the channel is closed and the queue is empty, it throws `closed_error`.
+try_recv: Channel a -> IOFail (Option a);
+try_recv = |chan| (
+    chan.@var.lock(
+        |data|
+        if data.@closed && data.@deque.is_empty {
+            pure $ err $ closed_error
+        };
+        if data.@deque.is_empty {
+            pure $ ok $ none()
+        };
+        let a = data.@deque.get_front.as_some;
+        let data = data.mod_deque(pop_front);
+        let _ = *chan.@var.Var::set(data);
+        pure $ ok $ some(a)
+    ).lift.bind(from_result)
+);
+
+// An error message which is reported when the channel is closed.
+closed_error: ErrMsg;
+closed_error = "Closed";

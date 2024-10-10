@@ -1,0 +1,23 @@
+module Test;
+
+import Minilib.Testing.UnitTest;
+
+import ChannelTest;
+import FileSystemTest;
+import PathTest;
+import PlatformTest;
+
+testsuite: TestSuite;
+testsuite = [
+    ("ChannelTest", ChannelTest::main),
+    ("FileSystemTest", FileSystemTest::main),
+    ("PathTest", PathTest::main),
+    ("PlatformTest", PlatformTest::main),
+];
+
+
+test: IO ();
+test = (
+    testsuite.run
+);
+
