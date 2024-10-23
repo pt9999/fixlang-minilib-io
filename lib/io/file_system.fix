@@ -2,7 +2,6 @@
 // getting file size and last modified time.
 module Minilib.IO.FileSystem;
 
-
 import Minilib.Encoding.Binary;
 import Minilib.IO.Errno;
 import Minilib.IO.Platform;
@@ -153,27 +152,26 @@ _def_struct_stat = (
             sizeof_struct_stat: 128
         }
     };
-    eval assert (|_|
-        "Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine,
-        uts.@sysname == "Linux" && uts.@machine == "x86_64"
-    );
-    // x86_64-linux-gnu (WSL 2, Ubuntu 22.04)
-    DefStructStat {
-        offsetof_st_dev: 0,
-        offsetof_st_ino: 8,
-        offsetof_st_nlink: 16,
-        offsetof_st_mode: 24,
-        offsetof_st_uid: 28,
-        offsetof_st_gid: 32,
-        offsetof_st_rdev: 40,
-        offsetof_st_size: 48,
-        offsetof_st_blksize: 56,
-        offsetof_st_blocks: 64,
-        offsetof_st_atime: 72,
-        offsetof_st_mtime: 88,
-        offsetof_st_ctime: 104,
-        sizeof_struct_stat: 144
-    }
+    if uts.@sysname == "Linux" && uts.@machine == "x86_64" {
+        // x86_64-linux-gnu (WSL 2, Ubuntu 22.04)
+        DefStructStat {
+            offsetof_st_dev: 0,
+            offsetof_st_ino: 8,
+            offsetof_st_nlink: 16,
+            offsetof_st_mode: 24,
+            offsetof_st_uid: 28,
+            offsetof_st_gid: 32,
+            offsetof_st_rdev: 40,
+            offsetof_st_size: 48,
+            offsetof_st_blksize: 56,
+            offsetof_st_blocks: 64,
+            offsetof_st_atime: 72,
+            offsetof_st_mtime: 88,
+            offsetof_st_ctime: 104,
+            sizeof_struct_stat: 144
+        }
+    };
+    undefined ("Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine)
 );
 
 //--------------------------------------------------------------------------
@@ -244,13 +242,15 @@ _opendir = |dir_path| (
     pure $ DirHandle {
         dtor: Destructor::make(dirp, |dirp|
             //eval debug_eprintln ("closing dir handle");
-            eval clear_errno._unsafe_perform;
+            //eval clear_errno._unsafe_perform;
             let res = FFI_CALL[I32 closedir(Ptr), dirp];
-            if res != 0_I32 {
-                debug_eprintln("closedir failed!: " + get_last_error._unsafe_perform)
+            /*eval if res != 0_I32 {
+                debug_eprintln("closedir failed!: res=" + res.to_string)
             } else {
                 ()
-            }
+            };
+            */
+            pure $ nullptr
         )
     }
 );

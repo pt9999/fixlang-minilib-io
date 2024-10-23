@@ -1,0 +1,49 @@
+module ErrnoTest;
+
+import Minilib.IO.Errno;
+import Minilib.Testing.UnitTest;
+
+test_get_last_error: TestCase;
+test_get_last_error = (
+    let testname = "test_get_last_error";
+    make_test(testname) $ |_|
+    let path = "/no/such/file/exists";
+    let errmsg = *open_file(Path::parse(path).as_some, "r")
+        .map(|fh| "")
+        .try(|errmsg| pure $ errmsg)
+        .lift;
+    let expected = "No such file or directory";
+    let actual = *get_last_error.lift;
+    assert_equal("eq", expected, actual)
+);
+
+test_strerror: TestCase;
+test_strerror = (
+    let testname = "test_strerror";
+    make_test(testname) $ |_|
+    let errno = 2_I32; // NOENT
+    let expected = "No such file or directory";
+    let actual = *strerror(errno).lift;
+    assert_equal("eq", expected, actual)
+);
+
+test_strerror_r: TestCase;
+test_strerror_r = (
+    let testname = "test_strerror_r";
+    make_test(testname) $ |_|
+    let errno = 2_I32; // NOENT
+    let expected = "No such file or directory";
+    let actual = *strerror_r(errno).lift;
+    assert_equal("eq", expected, actual)
+);
+
+main: IO ();
+main = (
+    [
+        test_get_last_error,
+        test_strerror,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

@@ -1,7 +1,7 @@
 // Get kernel information such as system name, machine archtecture.
 module Minilib.IO.Platform;
 
-
+import Minilib.IO.Errno;
 import Minilib.Encoding.Binary;
 import Minilib.Text.StringEx;
 
@@ -24,7 +24,9 @@ uname = (
     let res = buf.borrow_ptr(|p_buf|
         FFI_CALL[I32 uname(Ptr), p_buf]
     );
-    eval assert (|_| "uname failed!: some error occurred in uname.", res == 0_I32);
+    if res != 0_I32 {
+        undefined("uname failed!: some error occurred in uname. res=" + res.to_string)
+    };
     /*
     let dump = buf.to_iter.zip(Iterator::count_up(0)).fold(
         Array::empty(0), |dump, (b, i)|
@@ -81,9 +83,5 @@ byte_order = (
     if uts.@sysname == "Linux" && uts.@machine == "x86_64" {
         ByteOrder::little_endian()
     };
-    eval assert (|_|
-        "Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine,
-        false
-    );
-    ByteOrder::little_endian()
+    undefined("Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine)
 );

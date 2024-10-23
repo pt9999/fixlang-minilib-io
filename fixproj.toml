@@ -17,6 +17,7 @@ opt_level = "separated"
 files = [
     "tests/test.fix",
     "tests/io/channel_test.fix",
+    "tests/io/errno_test.fix",
     "tests/io/file_system_test.fix",
     "tests/io/path_test.fix",
     "tests/io/platform_test.fix",
