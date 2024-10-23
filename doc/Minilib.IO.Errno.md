@@ -12,14 +12,6 @@ Functions for `errno` which is set by system calls and some library functions.
 
 ## `namespace Minilib.IO.Errno`
 
-### `clear_errno : Std::IO ()`
-
-Clears `errno`, the global variable that stores the last error number.
-
-### `get_errno : Std::IO Std::I32`
-
-Gets the last error number from `errno`.
-
 ### `get_last_error : Std::IO Std::String`
 
 Gets the error message corresponding to the last error number.
