@@ -13,11 +13,11 @@ test_send: TestCase;
 test_send = (
     make_test("test_send") $ |_|
     let chan = *Channel::make.lift;
-    let _ = *chan.send(1);
-    let _ = *chan.close.lift;
+    chan.send(1);;
+    chan.close.lift;;
     // send() fails after close
     let res = *chan.send(2).to_result.lift;
-    let _ = *assert_equal("err", err $ Channel::closed_error, res);
+    assert_equal("err", err $ Channel::closed_error, res);;
     pure()
 );
 
@@ -39,9 +39,9 @@ test_send_mux = (
     let task1 = *AsyncIOTask::make(sender).lift;
     let task2 = *AsyncIOTask::make(sender).lift;
     let task3 = *AsyncIOTask::make(receiver).lift;
-    let _ = *assert_equal("res1", ok(), task1.get);
-    let _ = *assert_equal("res2", ok(), task2.get);
-    let _ = *assert_equal("res3", ok((1+2+3+4+5)*2), task3.get);
+    assert_equal("res1", ok(), *task1.get.lift);;
+    assert_equal("res2", ok(), *task2.get.lift);;
+    assert_equal("res3", ok((1+2+3+4+5)*2), *task3.get.lift);;
     pure()
 );
 
@@ -52,24 +52,24 @@ test_recv = (
     let chan1: Channel String = *Channel::make.lift;
     let chan2: Channel String = *Channel::make.lift;
     let io1 = do {
-        let _ = *var.Var::set(1).lift;
+        var.Var::set(1).lift;;
         let a = *chan1.recv;
-        let _ = *var.Var::set(2).lift;
-        let _ = *chan2.send(a);
+        var.Var::set(2).lift;;
+        chan2.send(a);;
         let a = *chan1.recv;
-        let _ = *var.Var::set(3).lift;
-        let _ = *chan2.send(a);
+        var.Var::set(3).lift;;
+        chan2.send(a);;
         pure $ ()
     }.to_result;
     let task1 = *AsyncIOTask::make(io1).lift;
-    let _ = *usleep(100000_U32);
-    let _ = *assert_equal("var", 1, *var.get.lift);
-    let _ = *chan1.send("hello");
-    let _ = *chan1.send("world");
-    let _ = *assert_equal("chan2", "hello", *chan2.recv);
-    let _ = *assert_equal("chan2", "world", *chan2.recv);
-    let _ = *assert_equal("var", 3, *var.get.lift);
-    let _ = *assert_equal("res1", ok(), task1.get);
+    usleep(100000_U32);;
+    assert_equal("var", 1, *var.get.lift);;
+    chan1.send("hello");;
+    chan1.send("world");;
+    assert_equal("chan2", "hello", *chan2.recv);;
+    assert_equal("chan2", "world", *chan2.recv);;
+    assert_equal("var", 3, *var.get.lift);;
+    assert_equal("res1", ok(), *task1.get.lift);;
     pure()
 );
 
@@ -82,9 +82,9 @@ test_recv_close = (
         pure $ ()
     }.to_result;
     let task1 = *AsyncIOTask::make(io1).lift;
-    let _ = *usleep(100000_U32);
-    let _ = *chan1.close.lift;
-    let _ = *assert_equal("res1", err(Channel::closed_error), task1.get);
+    usleep(100000_U32);;
+    chan1.close.lift;;
+    assert_equal("res1", err(Channel::closed_error), *task1.get.lift);;
     pure()
 );
 
@@ -106,10 +106,13 @@ test_recv_mux = (
     let task1 = *AsyncIOTask::make(sender).lift;
     let task2 = *AsyncIOTask::make(receiver).lift;
     let task3 = *AsyncIOTask::make(receiver).lift;
-    let _ = *assert_equal("res1", ok(), task1.get);
-    let total2 = task2.get;
-    let total3 = task3.get;
-    let _ = *assert_equal("total", 55, total2.as_ok + total3.as_ok);
+    let res1 = *task1.get.lift;
+    let res2 = *task2.get.lift;
+    let res3 = *task3.get.lift;
+    assert_equal("res1.is_ok", true, res1.is_ok);;
+    assert_equal("res2.is_ok", true, res2.is_ok);;
+    assert_equal("res3.is_ok", true, res3.is_ok);;
+    assert_equal("total", 55, res2.as_ok + res3.as_ok);;
     pure()
 );
 
@@ -118,13 +121,13 @@ test_clear: TestCase;
 test_clear = (
     make_test("test_clear") $ |_|
     let chan = *Channel::make.lift;
-    let _ = *chan.send(1);
-    let _ = *chan.send(2);
-    let _ = *chan.clear.lift;
-    let _ = *chan.send(3);
-    let _ = *chan.send(4);
-    let _ = *assert_equal("3", 3, *chan.recv);
-    let _ = *assert_equal("4", 4, *chan.recv);
+    chan.send(1);;
+    chan.send(2);;
+    chan.clear.lift;;
+    chan.send(3);;
+    chan.send(4);;
+    assert_equal("3", 3, *chan.recv);;
+    assert_equal("4", 4, *chan.recv);;
     pure()
 );
 
