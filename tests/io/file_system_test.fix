@@ -131,6 +131,7 @@ test_file_stat = (
     println("st_atime=" + file_stat.st_atime.to_string).lift;;
     println("st_mtime=" + file_stat.st_mtime.to_string).lift;;
     println("st_ctime=" + file_stat.st_ctime.to_string).lift;;
+    // TODO: check result
     pure()
 );
 
@@ -148,6 +149,7 @@ test_find_files = (
         assert_equal("file exists", true, actual);;
         pure()  // println(file_path).lift
     );
+    // TODO: check file_paths are correct
     pure()
 );
 
@@ -195,6 +197,12 @@ main = (
         test_find_files,
         test_make_dirs_rmdir,
         test_realpath,
+        // TODO: add test for `fflush`
+        // TODO: add test for `set_unbuffered_mode`
+        // TODO: add test for `creat`
+        // TODO: add test for `unlink`
+        // TODO: add test for `pipe`
+        // TODO: add test for `mkdir`
         TestCase::empty
     ]
     .run_test_driver
