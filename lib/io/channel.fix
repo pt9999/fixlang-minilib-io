@@ -19,7 +19,7 @@ type ChannelData a = unbox struct {
 // `Channel::make` creates a new channel.
 make: IO (Channel a);
 make = (
-    let _ = *pure();        // make it lazy
+    pure();;        // make it lazy
     let chan_data = ChannelData {
         deque: Deque::empty(0),
         closed: false
@@ -42,7 +42,7 @@ take_and_clear = |chan| (
     chan.@var.lock(
         |data|
         let iter = data.@deque.to_iter;
-        let _ = *chan.@var.mod(set_deque(Deque::empty(0)));
+        chan.@var.mod(set_deque(Deque::empty(0)));;
         pure $ iter
     )
 );
@@ -78,7 +78,7 @@ send = |a, chan| (
             pure $ err $ closed_error
         };
         let data = data.mod_deque(push_back(a));
-        let _ = *chan.@var.Var::set(data);
+        chan.@var.Var::set(data);;
         pure $ ok $ ()
     ).lift.bind(from_result)
 );
@@ -96,7 +96,7 @@ recv = |chan| (
         };
         let a = data.@deque.get_front.as_some;
         let data = data.mod_deque(pop_front);
-        let _ = *chan.@var.Var::set(data);
+        chan.@var.Var::set(data);;
         pure $ ok $ a
     ).lift.bind(from_result)
 );
@@ -116,7 +116,7 @@ try_recv = |chan| (
         };
         let a = data.@deque.get_front.as_some;
         let data = data.mod_deque(pop_front);
-        let _ = *chan.@var.Var::set(data);
+        chan.@var.Var::set(data);;
         pure $ ok $ some(a)
     ).lift.bind(from_result)
 );

@@ -44,14 +44,14 @@ namespace FileStat {
     // `stat(file_path)` retrieves information about the file pointed to by `file_path`.
     stat: String -> IOFail FileStat;
     stat = |file_path| (
-        let _ = *pure(); // make it lazy
+        pure();; // make it lazy
+        clear_errno.lift;;
         let statbuf = ByteBuffer::fill(_def_struct_stat.@sizeof_struct_stat, 0_U8, Platform::byte_order);
-        eval *clear_errno.lift;
-        let res = statbuf.borrow_ptr(|p_stat|
-            file_path.borrow_c_str(|p_filepath|
-                    FFI_CALL[I32 stat(Ptr, Ptr), p_filepath, p_stat]
+        let res = *statbuf.@array.borrow_ptr_io(|p_stat|
+            file_path.borrow_c_str_io(|p_filepath|
+                FFI_CALL_IO[I32 stat(Ptr, Ptr), p_filepath, p_stat]
             )
-        );
+        ).lift;
         if res != 0_I32 {
             throw("stat failed!: " + *get_last_error.lift)
         };
@@ -205,7 +205,7 @@ find_files = |dir_path| (
 // The filenames will be sorted in lexicographical order.
 list_dir: String -> IOFail (Array String);
 list_dir = |dirpath| (
-    let _ = *pure();    // make it lazy
+    pure();;    // make it lazy
     let dir_handle = *_opendir(dirpath);
     let names: Array String = Array::empty(10);
     let names = *loop_m(
@@ -231,10 +231,10 @@ type DirHandle = unbox struct {
 
 _opendir: String -> IOFail DirHandle;
 _opendir = |dir_path| (
-    eval *clear_errno.lift;
-    let dirp = dir_path.borrow_c_str(|p_path|
-        FFI_CALL[Ptr opendir(Ptr), p_path]
-    );
+    clear_errno.lift;;
+    let dirp = *dir_path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[Ptr opendir(Ptr), p_path]
+    ).lift;
     if dirp == nullptr {
         throw("opendir failed!: " + *get_last_error.lift
                 + "\ndir_path=" + dir_path)
@@ -243,7 +243,7 @@ _opendir = |dir_path| (
         dtor: Destructor::make(dirp, |dirp|
             //eval debug_eprintln ("closing dir handle");
             //eval clear_errno._unsafe_perform;
-            let res = FFI_CALL[I32 closedir(Ptr), dirp];
+            let res = *FFI_CALL_IO[I32 closedir(Ptr), dirp];
             /*eval if res != 0_I32 {
                 debug_eprintln("closedir failed!: res=" + res.to_string)
             } else {
@@ -257,9 +257,12 @@ _opendir = |dir_path| (
 
 _readdir: DirHandle -> IOFail String;
 _readdir = |dir_handle| (
-    let dirent: Ptr = dir_handle.@dtor.borrow(|dirp|
-        FFI_CALL[Ptr readdir(Ptr), dirp]
-    );
+    let dirent: Ptr = *(IO::from_runner $ |ios|
+        // TODO: use Destructor::borrow_io ? 
+        dir_handle.@dtor.borrow(|dirp|
+            FFI_CALL_IOS[Ptr readdir(Ptr), dirp, ios]
+        )
+    ).lift;
     if dirent == nullptr {
         // The end of directory stream is reached (`errno` is not changed),
         // or an error occured (`errno` is set).
@@ -310,11 +313,11 @@ make_dirs = |dir_path, mode| (
 // This mode is modified by the process's umask in the usual way.
 mkdir: String -> Option U32 -> IOFail ();
 mkdir = |path, mode| (
-    eval *clear_errno.lift;
+    clear_errno.lift;;
     let mode = if mode.is_some { mode.as_some } else { /* 0777 = */ 511_U32 };
-    let res = path.borrow_c_str(|p_path|
-        FFI_CALL[I32 mkdir(Ptr, U32), p_path, mode]
-    );
+    let res = *path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[I32 mkdir(Ptr, U32), p_path, mode]
+    ).lift;
     if res != 0_I32 {
         throw("mkdir failed!: " + *get_last_error.lift)
     };
@@ -324,10 +327,10 @@ mkdir = |path, mode| (
 // `rmdir(path)` deletes a directory, which must be empty.
 rmdir: String -> IOFail ();
 rmdir = |path| (
-    eval *clear_errno.lift;
-    let res = path.borrow_c_str(|p_path|
-        FFI_CALL[I32 rmdir(Ptr), p_path]
-    );
+    clear_errno.lift;;
+    let res = *path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[I32 rmdir(Ptr), p_path]
+    ).lift;
     if res != 0_I32 {
         throw("rmdir failed!: " + *get_last_error.lift)
     };
@@ -343,8 +346,8 @@ rmdir = |path| (
 // For details, see Linux manual page for [fflush()](https://man7.org/linux/man-pages/man3/fflush.3.html).
 fflush : IOHandle -> IOFail ();
 fflush = |handle| (
-    eval *clear_errno.lift;
-    let res = FFI_CALL[I32 fflush(Ptr), handle._file_ptr];
+    clear_errno.lift;;
+    let res = *FFI_CALL_IO[I32 fflush(Ptr), handle._file_ptr].lift;
     if res < 0_I32 {
         throw("fflush failed!: " + *get_last_error.lift)
     };
@@ -358,23 +361,22 @@ fflush = |handle| (
 //       So the stdout becomes block-buffered. The stderr also seems to be block-buffered.
 set_unbuffered_mode: IOHandle -> IO ();
 set_unbuffered_mode = |handle| (
-    let _ = *pure();
-    eval FFI_CALL[() setbuf(Ptr, Ptr), handle._file_ptr, nullptr];
-    pure()
+    pure();;
+    FFI_CALL_IO[() setbuf(Ptr, Ptr), handle._file_ptr, nullptr]
 );
 
 // Returns the canonicalized absolute pathname.
 // For detials, see Linux manual page for [realpath()](https://man7.org/linux/man-pages/man3/realpath.3.html).
 realpath: String -> IOFail String;
 realpath = |path| (
-    let p_resolved: Ptr = path.borrow_c_str(|p_path|
-        FFI_CALL[Ptr realpath(Ptr, Ptr), p_path, nullptr]
-    );
+    let p_resolved: Ptr = *path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[Ptr realpath(Ptr, Ptr), p_path, nullptr]
+    ).lift;
     if p_resolved == nullptr {
         throw("realpath failed!: " + *get_last_error.lift + ": path=" + path)
     };
     let resolved: String = String::_unsafe_from_c_str_ptr(p_resolved);
-    eval FFI_CALL[() free(Ptr), p_resolved];
+    FFI_CALL_IO[() free(Ptr), p_resolved].lift;;
     pure $ resolved
 );
 
@@ -382,11 +384,11 @@ realpath = |path| (
 // For details, see Linux manual page for [creat()](https://man7.org/linux/man-pages/man3/creat.3p.html).
 creat: String -> U32 -> IOFail I32;
 creat = |path, mode| (
-    let _ = *pure();    // make it lazy
-    eval *clear_errno.lift;
-    let fd = path.borrow_c_str(|p_path|
-        FFI_CALL[I32 creat(Ptr, U32), p_path, mode]
-    );
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    let fd = *path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[I32 creat(Ptr, U32), p_path, mode]
+    ).lift;
     if fd == -1_I32 {
         throw("creat failed!: " + *get_last_error.lift)
     };
@@ -397,11 +399,18 @@ creat = |path, mode| (
 // For details, see Linux manual page for [unlink()](https://man7.org/linux/man-pages/man2/unlink.2.html).
 unlink: String -> IOFail ();
 unlink = |path| (
-    let _ = *pure();    // make it lazy
-    eval *clear_errno.lift;
-    let res = path.borrow_c_str(|p_path|
-        FFI_CALL[I32 unlink(Ptr), p_path]
-    );
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    /*
+    let res = *(IO::from_runner $ |ios|
+        path.borrow_c_str(|p_path|
+            FFI_CALL_IOS[I32 unlink(Ptr), p_path, ios]
+        )
+    ).lift;
+    */
+    let res = *path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[I32 unlink(Ptr), p_path]
+    ).lift;
     if res == -1_I32 {
         throw("unlink failed!: " + *get_last_error.lift)
     };
@@ -412,11 +421,11 @@ unlink = |path| (
 // For details, see Linux manual page for [fdopen()](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
 fdopen: I32 -> String -> IOFail IOHandle;
 fdopen = |fd, mode| (
-    let _ = *pure();    // make it lazy
-    eval *clear_errno.lift;
-    let file_ptr = mode.borrow_c_str(|p_mode|
-        FFI_CALL[Ptr fdopen(I32, Ptr), fd, p_mode]
-    );
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    let file_ptr = *mode.borrow_c_str_io(|p_mode|
+        FFI_CALL_IO[Ptr fdopen(I32, Ptr), fd, p_mode]
+    ).lift;
     if file_ptr == nullptr {
         throw("fdopen failed!: " + *get_last_error.lift)
     };
@@ -429,12 +438,12 @@ fdopen = |fd, mode| (
 // For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
 pipe: IOFail (I32, I32);
 pipe = (
-    let _ = *pure();    // make it lazy
+    pure();;    // make it lazy
+    clear_errno.lift;;
     let pipefd: Array I32 = Array::fill(2, 0_I32);
-    eval *clear_errno.lift;
-    let res = pipefd.borrow_ptr(|p_pipefd|
-        FFI_CALL[I32 pipe(Ptr), p_pipefd]
-    );
+    let res = *pipefd.borrow_ptr_io(|p_pipefd|
+        FFI_CALL_IO[I32 pipe(Ptr), p_pipefd]
+    ).lift;
     if res == -1_I32 {
         throw("pipe failed!: " + *get_last_error.lift)
     };
