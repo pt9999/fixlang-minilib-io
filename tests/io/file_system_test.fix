@@ -116,7 +116,7 @@ test_file_stat = (
     let testname = "test_file_stat";
     make_test(testname) $ |_|
 
-    let file_path = "tests/file_system_test.fix";
+    let file_path = "tests/io/file_system_test.fix";
     let file_stat = *stat(file_path);
     println("st_dev=" + file_stat.st_dev.to_string).lift;;
     println("st_ino=" + file_stat.st_ino.to_string).lift;;
@@ -131,7 +131,8 @@ test_file_stat = (
     println("st_atime=" + file_stat.st_atime.to_string).lift;;
     println("st_mtime=" + file_stat.st_mtime.to_string).lift;;
     println("st_ctime=" + file_stat.st_ctime.to_string).lift;;
-    // TODO: check result
+    assert_true("is_file", file_stat.is_file);;
+    assert_true("!is_dir", !file_stat.is_dir);;
     pure()
 );
 
@@ -193,7 +194,7 @@ main = (
         test_open_pipe,
         test_list_dir,
         test_file_directory_exists,
-        //test_file_stat,
+        test_file_stat,
         test_find_files,
         test_make_dirs_rmdir,
         test_realpath,

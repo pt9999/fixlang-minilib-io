@@ -2,6 +2,8 @@
 // getting file size and last modified time.
 module Minilib.IO.FileSystem;
 
+import Time;
+
 import Minilib.Encoding.Binary;
 import Minilib.IO.Errno;
 import Minilib.IO.Platform;
@@ -37,7 +39,7 @@ directory_exists = |dir_path| (
 
 // Type of file status
 type FileStat = unbox struct {
-    data: ByteBuffer  // struct stat
+    data: Array U64
 };
 
 namespace FileStat {
@@ -46,16 +48,16 @@ namespace FileStat {
     stat = |file_path| (
         pure();; // make it lazy
         clear_errno.lift;;
-        let statbuf = ByteBuffer::fill(_def_struct_stat.@sizeof_struct_stat, 0_U8, Platform::byte_order);
-        let res = *statbuf.@array.borrow_ptr_io(|p_stat|
+        let data = Array::fill(16, 0_U64);
+        let (data, res) = *data.mutate_boxed_io(|p_data|
             file_path.borrow_c_str_io(|p_filepath|
-                FFI_CALL_IO[I32 stat(Ptr, Ptr), p_filepath, p_stat]
+                FFI_CALL_IO[CInt minilib_iofs_stat(Ptr, Ptr), p_filepath, p_data]
             )
         ).lift;
-        if res != 0_I32 {
+        if res != 0.to_CInt {
             throw("stat failed!: " + *get_last_error.lift)
         };
-        pure $ FileStat { data: statbuf }
+        pure $ FileStat { data: data }
     );
 
     // Returns true if it is a regular file.
@@ -69,110 +71,62 @@ namespace FileStat {
                         /* 0o0040000 = */ 16384_U32;
 
     st_dev: FileStat -> U64;
-    st_dev = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_dev);
+    st_dev = |file_stat| file_stat.@data.@(0);
 
     st_ino: FileStat -> U64;
-    st_ino = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_ino);
+    st_ino = |file_stat| file_stat.@data.@(1);
 
     st_nlink: FileStat -> U64;
-    st_nlink = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_nlink);
+    st_nlink = |file_stat| file_stat.@data.@(2);
 
     st_mode: FileStat -> U32;
-    st_mode = |file_stat| file_stat.@data.get_u32(_def_struct_stat.@offsetof_st_mode);
+    st_mode = |file_stat| file_stat.@data.@(3).to_U32;
 
     st_uid: FileStat -> U32;
-    st_uid = |file_stat| file_stat.@data.get_u32(_def_struct_stat.@offsetof_st_uid);
+    st_uid = |file_stat| file_stat.@data.@(4).to_U32;
 
     st_gid: FileStat -> U32;
-    st_gid = |file_stat| file_stat.@data.get_u32(_def_struct_stat.@offsetof_st_gid);
+    st_gid = |file_stat| file_stat.@data.@(5).to_U32;
 
     st_rdev: FileStat -> U64;
-    st_rdev = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_rdev);
+    st_rdev = |file_stat| file_stat.@data.@(6);
 
     st_size: FileStat -> I64;
-    st_size = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_size).to_I64;
+    st_size = |file_stat| file_stat.@data.@(7).to_I64;
 
     st_blksize: FileStat -> I64;
-    st_blksize = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_blksize).to_I64;
+    st_blksize = |file_stat| file_stat.@data.@(8).to_I64;
 
     st_blocks: FileStat -> U64;
-    st_blocks = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_blocks);
+    st_blocks = |file_stat| file_stat.@data.@(9);
+
+    st_atim: FileStat -> Time;
+    st_atim = |file_stat| Time { 
+        sec: file_stat.@data.@(10).to_I64, 
+        nanosec: file_stat.@data.@(11).to_U32, 
+    };
+
+    st_mtim: FileStat -> Time;
+    st_mtim = |file_stat| Time { 
+        sec: file_stat.@data.@(12).to_I64, 
+        nanosec: file_stat.@data.@(13).to_U32, 
+    };
+
+    st_ctim: FileStat -> Time;
+    st_ctim = |file_stat| Time { 
+        sec: file_stat.@data.@(14).to_I64, 
+        nanosec: file_stat.@data.@(15).to_U32, 
+    };
 
     st_atime: FileStat -> U64;
-    st_atime = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_atime);
+    st_atime = |file_stat| file_stat.@data.@(10);
 
     st_mtime: FileStat -> U64;
-    st_mtime = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_mtime);
+    st_mtime = |file_stat| file_stat.@data.@(12);
 
     st_ctime: FileStat -> U64;
-    st_ctime = |file_stat| file_stat.@data.get_u64(_def_struct_stat.@offsetof_st_ctime);
+    st_ctime = |file_stat| file_stat.@data.@(14);
 }
-
-
-// [nofixdoc] A type that represents size info of `struct stat`.
-type DefStructStat = unbox struct {
-    offsetof_st_dev: I64,
-    offsetof_st_ino: I64,
-    offsetof_st_nlink: I64,
-    offsetof_st_mode: I64,
-    offsetof_st_uid: I64,
-    offsetof_st_gid: I64,
-    offsetof_st_rdev: I64,
-    offsetof_st_size: I64,
-    offsetof_st_blksize: I64,
-    offsetof_st_blocks: I64,
-    offsetof_st_atime: I64,
-    offsetof_st_mtime: I64,
-    offsetof_st_ctime: I64,
-    sizeof_struct_stat: I64
-};
-
-// NOTE: the system information does not change during program execution,
-// so this variable is constant.
-_def_struct_stat: DefStructStat;
-_def_struct_stat = (
-    let uts = Platform::uname;
-    // aarch64-linux-gnu (ChromeBook, Debian 11)
-    if uts.@sysname == "Linux" && uts.@machine == "aarch64" {
-        // aarch64-linux-gnu
-        DefStructStat {
-            offsetof_st_dev: 0,
-            offsetof_st_ino: 8,
-            offsetof_st_nlink: 20,
-            offsetof_st_mode: 16,
-            offsetof_st_uid: 24,
-            offsetof_st_gid: 28,
-            offsetof_st_rdev: 32,
-            offsetof_st_size: 48,
-            offsetof_st_blksize: 56,
-            offsetof_st_blocks: 64,
-            offsetof_st_atime: 72,
-            offsetof_st_mtime: 88,
-            offsetof_st_ctime: 104,
-            sizeof_struct_stat: 128
-        }
-    };
-    if uts.@sysname == "Linux" && uts.@machine == "x86_64" {
-        // x86_64-linux-gnu (WSL 2, Ubuntu 22.04)
-        DefStructStat {
-            offsetof_st_dev: 0,
-            offsetof_st_ino: 8,
-            offsetof_st_nlink: 16,
-            offsetof_st_mode: 24,
-            offsetof_st_uid: 28,
-            offsetof_st_gid: 32,
-            offsetof_st_rdev: 40,
-            offsetof_st_size: 48,
-            offsetof_st_blksize: 56,
-            offsetof_st_blocks: 64,
-            offsetof_st_atime: 72,
-            offsetof_st_mtime: 88,
-            offsetof_st_ctime: 104,
-            sizeof_struct_stat: 144
-        }
-    };
-    undefined ("Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine)
-);
 
 //--------------------------------------------------------------------------
 //  Finding files

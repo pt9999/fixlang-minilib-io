@@ -1,4 +1,4 @@
-proj_file_hash = "4afad760716ec9ba15b6c34eee6b5599"
+proj_file_hash = "b7e0244d7f5c27b0f74d123bd734390d"
 
 [[dependencies]]
 name = "minilib-common"

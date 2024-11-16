@@ -13,6 +13,8 @@ files = [
     "lib/io/path.fix",
     "lib/io/platform.fix",
 ]
+objects = ["lib.o"]
+preliminary_commands = [["make", "lib.o"]]
 
 [build.test]
 opt_level = "separated"
@@ -48,3 +50,9 @@ git = { url = "https://github.com/pt9999/fixlang-minilib-collection.git" }
 name = "asynctask"
 version = "*"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
+
+
+[[dependencies]]
+name = "time"
+version = "*"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-time.git" }
