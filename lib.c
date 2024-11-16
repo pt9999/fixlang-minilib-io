@@ -1,8 +1,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <time.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 
 int minilib_iofs_stat(const char* pathname, uint64_t *ret)
 {
@@ -28,4 +31,24 @@ int minilib_iofs_stat(const char* pathname, uint64_t *ret)
     ret[14] = (uint64_t)st.st_ctim.tv_sec;
     ret[15] = (uint64_t)st.st_ctim.tv_nsec;
     return 0;
+}
+
+size_t minilib_iofs_readdir(void* dir_handle, uint8_t *buf, size_t bufsize)
+{
+    if (dir_handle == NULL || bufsize <= 0) {
+        return 0;
+    }
+    struct dirent* dent = readdir((DIR*) dir_handle);
+    if (dent == NULL) {
+        // If the end of directory stream is reached or an error occurs, NULL is returned.
+        // To distinguish an error or not, check `errno`.
+        return 0;
+    }
+
+    size_t len = (size_t) strlen(dent->d_name);
+    if (len >= bufsize) {
+        len = bufsize;
+    }
+    memcpy(buf, dent->d_name, len);  // Copy to a byte array (not null-terminated)
+    return len;
 }

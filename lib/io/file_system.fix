@@ -211,32 +211,23 @@ _opendir = |dir_path| (
 
 _readdir: DirHandle -> IOFail String;
 _readdir = |dir_handle| (
-    let dirent: Ptr = *(IO::from_runner $ |ios|
-        // TODO: use Destructor::borrow_io ? 
-        dir_handle.@dtor.borrow(|dirp|
-            FFI_CALL_IOS[Ptr readdir(Ptr), dirp, ios]
+    clear_errno.lift;;
+    let bufsize = 256;
+    let buf = Array::fill(bufsize, 0_U8);
+    let (buf, len) = *dir_handle.@dtor.borrow_io(|dirp|
+        buf.mutate_boxed_io(|p_buf|
+            FFI_CALL_IO[CSizeT minilib_iofs_readdir(Ptr, Ptr, CSizeT), dirp, p_buf, bufsize.to_CSizeT]
         )
     ).lift;
-    if dirent == nullptr {
-        // The end of directory stream is reached (`errno` is not changed),
-        // or an error occured (`errno` is set).
-        // We cannot get or set `errno`, so simply ignore errors.
+    if len.to_I64 == 0 {
+        let errno = *get_errno.lift;
+        if errno != 0_I32 {
+            throw("readdir failed!: " + *get_last_error.lift)
+        };
         pure $ ""
     };
-
-    //   struct dirent {
-    //       ino_t          d_ino;       /* Inode number */
-    //       off_t          d_off;       /* Not an offset; see below */
-    //       unsigned short d_reclen;    /* Length of this record */
-    //       unsigned char  d_type;      /* Type of file; not supported
-    //                                      by all filesystem types */
-    //       char           d_name[256]; /* Null-terminated filename */
-    //   };
-    // (offset of d_name) = sizeof(ino_t) + sizeof(off_t) + 2 + 1
-    //                    = 8 + 8 + 2 + 1 = 19
-    let d_name: Ptr = dirent.add_offset(19);
-    let name = String::_unsafe_from_c_str_ptr(d_name);
-    pure $ name
+    let buf = buf.subarray(0, len.to_I64);
+    pure $ buf._unsafe_to_string
 );
 
 //--------------------------------------------------------------------------
