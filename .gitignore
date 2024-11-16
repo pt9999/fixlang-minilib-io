@@ -1,3 +1,4 @@
 .fixlang
 *.o
 .tmp
+tmp.*

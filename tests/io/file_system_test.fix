@@ -173,6 +173,20 @@ test_make_dirs_rmdir = (
     pure()
 );
 
+test_mkdir_rmdir: TestCase;
+test_mkdir_rmdir = (
+    let testname = "test_mkdir_rmdir";
+    make_test(testname) $ |_|
+    let tmp_dir = "tmp.test_mkdir_rmdir.tmp";
+    let tmp_dir_exists = directory_exists(tmp_dir).lift;
+    when(*tmp_dir_exists, rmdir(tmp_dir));;
+    mkdir(tmp_dir, some(0o755_U32));;
+    assert_true("mkdir", *tmp_dir_exists);;
+    rmdir(tmp_dir);;
+    assert_true("rmdir", !*tmp_dir_exists);;
+    pure()
+);
+
 test_realpath: TestCase;
 test_realpath = (
     let testname = "test_realpath";
@@ -187,6 +201,42 @@ test_realpath = (
     pure()
 );
 
+test_creat_unlink: TestCase;
+test_creat_unlink = (
+    let testname = "test_creat_unlink";
+    make_test(testname) $ |_|
+    let tmp_file = "tmp.test_creat_unlink.tmp";
+    let tmp_file_exists = file_exists(tmp_file).lift;
+    when(*tmp_file_exists, unlink(tmp_file));;
+    creat(tmp_file, 0o644_U32);;
+    assert_true("creat", *tmp_file_exists);;
+    unlink(tmp_file);;
+    assert_true("unlink", !*tmp_file_exists);;
+    pure()
+);
+
+test_pipe: TestCase;
+test_pipe = (
+    let testname = "test_pipe";
+    make_test(testname) $ |_|
+    let (read_fd, write_fd) = *pipe;
+    let n = 16;
+    let input = Array::fill(n, 0_U8);
+    let output = Array::from_map(n, |i| i.to_U8);
+    let wsize = *output.borrow_ptr_io(|p_output|
+        FFI_CALL_IO[CSizeT write(CInt, Ptr, CSizeT), write_fd.to_CInt, p_output, n.to_CSizeT]
+    ).lift;
+    let (input, rsize) = *input.mutate_boxed_io(|p_input|
+        FFI_CALL_IO[CSizeT read(CInt, Ptr, CSizeT), read_fd.to_CInt, p_input, n.to_CSizeT]
+    ).lift;
+    FFI_CALL_IO[() close(CInt), write_fd.to_CInt].lift;;
+    FFI_CALL_IO[() close(CInt), read_fd.to_CInt].lift;;
+    assert_equal("write", n.to_CSizeT, wsize);;
+    assert_equal("read", n.to_CSizeT, rsize);;
+    assert_equal("input", output, input);;
+    pure()
+);
+
 main: IO ();
 main = (
     [
@@ -198,12 +248,11 @@ main = (
         test_find_files,
         test_make_dirs_rmdir,
         test_realpath,
+        test_creat_unlink,
+        test_mkdir_rmdir,
+        test_pipe,
         // TODO: add test for `fflush`
         // TODO: add test for `set_unbuffered_mode`
-        // TODO: add test for `creat`
-        // TODO: add test for `unlink`
-        // TODO: add test for `pipe`
-        // TODO: add test for `mkdir`
         TestCase::empty
     ]
     .run_test_driver
