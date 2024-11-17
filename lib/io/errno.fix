@@ -23,7 +23,7 @@ strerror_r = |errno| (
     pure();;
     let bufsize = 1024;
     let buf = Array::fill(bufsize, 0_U8);
-    buf.borrow_ptr_io(|p_buf|
+    buf.borrow_boxed_io(|p_buf|
         let p_errmsg = *FFI_CALL_IO[Ptr strerror_r(I32, Ptr, CSizeT), errno, p_buf, bufsize.to_CSizeT];
         // GNU version of strerror_r() sometimes does not change the contents of p_buf.
         // Only the return value is set properly.

@@ -21,7 +21,7 @@ type UName = unbox struct {
 uname: UName;
 uname = (
     let buf = Array::fill(4096, 0_U8);
-    let res = buf.borrow_ptr(|p_buf|
+    let res = buf.borrow_boxed(|p_buf|
         FFI_CALL[I32 uname(Ptr), p_buf]
     );
     if res != 0_I32 {

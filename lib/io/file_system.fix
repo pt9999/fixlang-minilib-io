@@ -386,7 +386,7 @@ pipe = (
     pure();;    // make it lazy
     clear_errno.lift;;
     let pipefd: Array I32 = Array::fill(2, 0_I32);
-    let res = *pipefd.borrow_ptr_io(|p_pipefd|
+    let res = *pipefd.borrow_boxed_io(|p_pipefd|
         FFI_CALL_IO[I32 pipe(Ptr), p_pipefd]
     ).lift;
     if res == -1_I32 {

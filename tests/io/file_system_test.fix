@@ -223,7 +223,7 @@ test_pipe = (
     let n = 16;
     let input = Array::fill(n, 0_U8);
     let output = Array::from_map(n, |i| i.to_U8);
-    let wsize = *output.borrow_ptr_io(|p_output|
+    let wsize = *output.borrow_boxed_io(|p_output|
         FFI_CALL_IO[CSizeT write(CInt, Ptr, CSizeT), write_fd.to_CInt, p_output, n.to_CSizeT]
     ).lift;
     let (input, rsize) = *input.mutate_boxed_io(|p_input|
