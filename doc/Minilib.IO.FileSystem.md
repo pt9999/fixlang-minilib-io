@@ -7,38 +7,6 @@ getting file size and last modified time.
 
 ## `namespace Minilib.IO.FileSystem`
 
-### `type DefStructStat = unbox struct { ...fields... }`
-
-[nofixdoc] A type that represents size info of `struct stat`.
-
-#### field `offsetof_st_dev : Std::I64`
-
-#### field `offsetof_st_ino : Std::I64`
-
-#### field `offsetof_st_nlink : Std::I64`
-
-#### field `offsetof_st_mode : Std::I64`
-
-#### field `offsetof_st_uid : Std::I64`
-
-#### field `offsetof_st_gid : Std::I64`
-
-#### field `offsetof_st_rdev : Std::I64`
-
-#### field `offsetof_st_size : Std::I64`
-
-#### field `offsetof_st_blksize : Std::I64`
-
-#### field `offsetof_st_blocks : Std::I64`
-
-#### field `offsetof_st_atime : Std::I64`
-
-#### field `offsetof_st_mtime : Std::I64`
-
-#### field `offsetof_st_ctime : Std::I64`
-
-#### field `sizeof_struct_stat : Std::I64`
-
 ### `type DirHandle = unbox struct { ...fields... }`
 
 [nofixdoc] Type of a directory handle
@@ -49,7 +17,7 @@ getting file size and last modified time.
 
 Type of file status
 
-#### field `data : Minilib.Encoding.Binary::ByteBuffer`
+#### field `data : Std::Array Std::U64`
 
 # Traits and aliases
 
@@ -58,11 +26,6 @@ Type of file status
 # Values
 
 ## `namespace Minilib.IO.FileSystem`
-
-### `_def_struct_stat : Minilib.IO.FileSystem::DefStructStat`
-
-NOTE: the system information does not change during program execution,
-so this variable is constant.
 
 ### `_opendir : Std::String -> Std::IO::IOFail Minilib.IO.FileSystem::DirHandle`
 
@@ -150,232 +113,6 @@ NOTE: When a fix program is invoked by `run_with_stream()`,
 Deletes a name from the filesystem and possibly the file it refers to.
 For details, see Linux manual page for [unlink()](https://man7.org/linux/man-pages/man2/unlink.2.html).
 
-## `namespace Minilib.IO.FileSystem::DefStructStat`
-
-### `@offsetof_st_atime : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_atime` from a value of `DefStructStat`.
-
-### `@offsetof_st_blksize : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_blksize` from a value of `DefStructStat`.
-
-### `@offsetof_st_blocks : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_blocks` from a value of `DefStructStat`.
-
-### `@offsetof_st_ctime : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_ctime` from a value of `DefStructStat`.
-
-### `@offsetof_st_dev : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_dev` from a value of `DefStructStat`.
-
-### `@offsetof_st_gid : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_gid` from a value of `DefStructStat`.
-
-### `@offsetof_st_ino : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_ino` from a value of `DefStructStat`.
-
-### `@offsetof_st_mode : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_mode` from a value of `DefStructStat`.
-
-### `@offsetof_st_mtime : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_mtime` from a value of `DefStructStat`.
-
-### `@offsetof_st_nlink : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_nlink` from a value of `DefStructStat`.
-
-### `@offsetof_st_rdev : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_rdev` from a value of `DefStructStat`.
-
-### `@offsetof_st_size : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_size` from a value of `DefStructStat`.
-
-### `@offsetof_st_uid : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `offsetof_st_uid` from a value of `DefStructStat`.
-
-### `@sizeof_struct_stat : Minilib.IO.FileSystem::DefStructStat -> Std::I64`
-
-Retrieves the field `sizeof_struct_stat` from a value of `DefStructStat`.
-
-### `act_offsetof_st_atime : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_atime`.
-
-### `act_offsetof_st_blksize : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_blksize`.
-
-### `act_offsetof_st_blocks : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_blocks`.
-
-### `act_offsetof_st_ctime : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_ctime`.
-
-### `act_offsetof_st_dev : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_dev`.
-
-### `act_offsetof_st_gid : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_gid`.
-
-### `act_offsetof_st_ino : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_ino`.
-
-### `act_offsetof_st_mode : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_mode`.
-
-### `act_offsetof_st_mtime : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_mtime`.
-
-### `act_offsetof_st_nlink : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_nlink`.
-
-### `act_offsetof_st_rdev : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_rdev`.
-
-### `act_offsetof_st_size : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_size`.
-
-### `act_offsetof_st_uid : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `offsetof_st_uid`.
-
-### `act_sizeof_struct_stat : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> f Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a functorial action to field `sizeof_struct_stat`.
-
-### `mod_offsetof_st_atime : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_atime`.
-
-### `mod_offsetof_st_blksize : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_blksize`.
-
-### `mod_offsetof_st_blocks : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_blocks`.
-
-### `mod_offsetof_st_ctime : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_ctime`.
-
-### `mod_offsetof_st_dev : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_dev`.
-
-### `mod_offsetof_st_gid : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_gid`.
-
-### `mod_offsetof_st_ino : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_ino`.
-
-### `mod_offsetof_st_mode : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_mode`.
-
-### `mod_offsetof_st_mtime : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_mtime`.
-
-### `mod_offsetof_st_nlink : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_nlink`.
-
-### `mod_offsetof_st_rdev : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_rdev`.
-
-### `mod_offsetof_st_size : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_size`.
-
-### `mod_offsetof_st_uid : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `offsetof_st_uid`.
-
-### `mod_sizeof_struct_stat : (Std::I64 -> Std::I64) -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by applying a function to field `sizeof_struct_stat`.
-
-### `set_offsetof_st_atime : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_atime` to a specified one.
-
-### `set_offsetof_st_blksize : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_blksize` to a specified one.
-
-### `set_offsetof_st_blocks : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_blocks` to a specified one.
-
-### `set_offsetof_st_ctime : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_ctime` to a specified one.
-
-### `set_offsetof_st_dev : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_dev` to a specified one.
-
-### `set_offsetof_st_gid : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_gid` to a specified one.
-
-### `set_offsetof_st_ino : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_ino` to a specified one.
-
-### `set_offsetof_st_mode : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_mode` to a specified one.
-
-### `set_offsetof_st_mtime : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_mtime` to a specified one.
-
-### `set_offsetof_st_nlink : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_nlink` to a specified one.
-
-### `set_offsetof_st_rdev : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_rdev` to a specified one.
-
-### `set_offsetof_st_size : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_size` to a specified one.
-
-### `set_offsetof_st_uid : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `offsetof_st_uid` to a specified one.
-
-### `set_sizeof_struct_stat : Std::I64 -> Minilib.IO.FileSystem::DefStructStat -> Minilib.IO.FileSystem::DefStructStat`
-
-Updates a value of `DefStructStat` by setting field `sizeof_struct_stat` to a specified one.
-
 ## `namespace Minilib.IO.FileSystem::DirHandle`
 
 ### `@dtor : Minilib.IO.FileSystem::DirHandle -> Std::FFI::Destructor Std::Ptr`
@@ -396,11 +133,11 @@ Updates a value of `DirHandle` by setting field `dtor` to a specified one.
 
 ## `namespace Minilib.IO.FileSystem::FileStat`
 
-### `@data : Minilib.IO.FileSystem::FileStat -> Minilib.Encoding.Binary::ByteBuffer`
+### `@data : Minilib.IO.FileSystem::FileStat -> Std::Array Std::U64`
 
 Retrieves the field `data` from a value of `FileStat`.
 
-### `act_data : [f : Std::Functor] (Minilib.Encoding.Binary::ByteBuffer -> f Minilib.Encoding.Binary::ByteBuffer) -> Minilib.IO.FileSystem::FileStat -> f Minilib.IO.FileSystem::FileStat`
+### `act_data : [f : Std::Functor] (Std::Array Std::U64 -> f (Std::Array Std::U64)) -> Minilib.IO.FileSystem::FileStat -> f Minilib.IO.FileSystem::FileStat`
 
 Updates a value of `FileStat` by applying a functorial action to field `data`.
 
@@ -412,19 +149,23 @@ Returns true if it is a directory.
 
 Returns true if it is a regular file.
 
-### `mod_data : (Minilib.Encoding.Binary::ByteBuffer -> Minilib.Encoding.Binary::ByteBuffer) -> Minilib.IO.FileSystem::FileStat -> Minilib.IO.FileSystem::FileStat`
+### `mod_data : (Std::Array Std::U64 -> Std::Array Std::U64) -> Minilib.IO.FileSystem::FileStat -> Minilib.IO.FileSystem::FileStat`
 
 Updates a value of `FileStat` by applying a function to field `data`.
 
-### `set_data : Minilib.Encoding.Binary::ByteBuffer -> Minilib.IO.FileSystem::FileStat -> Minilib.IO.FileSystem::FileStat`
+### `set_data : Std::Array Std::U64 -> Minilib.IO.FileSystem::FileStat -> Minilib.IO.FileSystem::FileStat`
 
 Updates a value of `FileStat` by setting field `data` to a specified one.
+
+### `st_atim : Minilib.IO.FileSystem::FileStat -> Time::Time`
 
 ### `st_atime : Minilib.IO.FileSystem::FileStat -> Std::U64`
 
 ### `st_blksize : Minilib.IO.FileSystem::FileStat -> Std::I64`
 
 ### `st_blocks : Minilib.IO.FileSystem::FileStat -> Std::U64`
+
+### `st_ctim : Minilib.IO.FileSystem::FileStat -> Time::Time`
 
 ### `st_ctime : Minilib.IO.FileSystem::FileStat -> Std::U64`
 
@@ -435,6 +176,8 @@ Updates a value of `FileStat` by setting field `data` to a specified one.
 ### `st_ino : Minilib.IO.FileSystem::FileStat -> Std::U64`
 
 ### `st_mode : Minilib.IO.FileSystem::FileStat -> Std::U32`
+
+### `st_mtim : Minilib.IO.FileSystem::FileStat -> Time::Time`
 
 ### `st_mtime : Minilib.IO.FileSystem::FileStat -> Std::U64`
 
