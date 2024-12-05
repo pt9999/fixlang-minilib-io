@@ -2,7 +2,6 @@ module Test;
 
 import Minilib.Testing.UnitTest;
 
-import ChannelTest;
 import ErrnoTest;
 import FileSystemTest;
 import PathTest;
@@ -10,7 +9,6 @@ import PlatformTest;
 
 testsuite: TestSuite;
 testsuite = [
-    ("ChannelTest", ChannelTest::main),
     ("ErrnoTest", ErrnoTest::main),
     ("FileSystemTest", FileSystemTest::main),
     ("PathTest", PathTest::main),

@@ -7,7 +7,6 @@ license = "MIT"
 [build]
 opt_level = "separated"
 files = [
-    "lib/io/channel.fix",
     "lib/io/errno.fix",
     "lib/io/file_system.fix",
     "lib/io/path.fix",
@@ -20,7 +19,6 @@ preliminary_commands = [["make", "lib.o"]]
 opt_level = "separated"
 files = [
     "tests/test.fix",
-    "tests/io/channel_test.fix",
     "tests/io/errno_test.fix",
     "tests/io/file_system_test.fix",
     "tests/io/path_test.fix",
@@ -39,20 +37,18 @@ version = "*"
 # path = "../fixlang-minilib-binary"
 git = { url = "https://github.com/pt9999/fixlang-minilib-binary.git" }
 
-# for deque
-[[dependencies]]
-name = "minilib-collection"
-version = "*"
-# path = "../fixlang-minilib-collection"
-git = { url = "https://github.com/pt9999/fixlang-minilib-collection.git" }
-
-[[dependencies]]
-name = "asynctask"
-version = "*"
-git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
-
-
 [[dependencies]]
 name = "time"
 version = "*"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-time.git" }
+
+[[dependencies]]
+name = "hashmap"
+version = "1.0.0"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-hashmap.git" }
+
+# for file_system_test
+[[dependencies]]
+name = "asynctask"
+version = "1.0.0"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
