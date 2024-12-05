@@ -1,4 +1,5 @@
 .fixlang
-*.o
 .tmp
+.local
+*.o
 tmp.*
