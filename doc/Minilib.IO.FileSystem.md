@@ -113,33 +113,7 @@ NOTE: When a fix program is invoked by `run_with_stream()`,
 Deletes a name from the filesystem and possibly the file it refers to.
 For details, see Linux manual page for [unlink()](https://man7.org/linux/man-pages/man2/unlink.2.html).
 
-## `namespace Minilib.IO.FileSystem::DirHandle`
-
-### `@dtor : Minilib.IO.FileSystem::DirHandle -> Std::FFI::Destructor Std::Ptr`
-
-Retrieves the field `dtor` from a value of `DirHandle`.
-
-### `act_dtor : [f : Std::Functor] (Std::FFI::Destructor Std::Ptr -> f (Std::FFI::Destructor Std::Ptr)) -> Minilib.IO.FileSystem::DirHandle -> f Minilib.IO.FileSystem::DirHandle`
-
-Updates a value of `DirHandle` by applying a functorial action to field `dtor`.
-
-### `mod_dtor : (Std::FFI::Destructor Std::Ptr -> Std::FFI::Destructor Std::Ptr) -> Minilib.IO.FileSystem::DirHandle -> Minilib.IO.FileSystem::DirHandle`
-
-Updates a value of `DirHandle` by applying a function to field `dtor`.
-
-### `set_dtor : Std::FFI::Destructor Std::Ptr -> Minilib.IO.FileSystem::DirHandle -> Minilib.IO.FileSystem::DirHandle`
-
-Updates a value of `DirHandle` by setting field `dtor` to a specified one.
-
 ## `namespace Minilib.IO.FileSystem::FileStat`
-
-### `@data : Minilib.IO.FileSystem::FileStat -> Std::Array Std::U64`
-
-Retrieves the field `data` from a value of `FileStat`.
-
-### `act_data : [f : Std::Functor] (Std::Array Std::U64 -> f (Std::Array Std::U64)) -> Minilib.IO.FileSystem::FileStat -> f Minilib.IO.FileSystem::FileStat`
-
-Updates a value of `FileStat` by applying a functorial action to field `data`.
 
 ### `is_dir : Minilib.IO.FileSystem::FileStat -> Std::Bool`
 
@@ -148,14 +122,6 @@ Returns true if it is a directory.
 ### `is_file : Minilib.IO.FileSystem::FileStat -> Std::Bool`
 
 Returns true if it is a regular file.
-
-### `mod_data : (Std::Array Std::U64 -> Std::Array Std::U64) -> Minilib.IO.FileSystem::FileStat -> Minilib.IO.FileSystem::FileStat`
-
-Updates a value of `FileStat` by applying a function to field `data`.
-
-### `set_data : Std::Array Std::U64 -> Minilib.IO.FileSystem::FileStat -> Minilib.IO.FileSystem::FileStat`
-
-Updates a value of `FileStat` by setting field `data` to a specified one.
 
 ### `st_atim : Minilib.IO.FileSystem::FileStat -> Time::Time`
 
