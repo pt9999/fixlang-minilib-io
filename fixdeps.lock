@@ -11,12 +11,12 @@ rev = "86ec8949cd8fc6eaeb7008d722d061f466892383"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.2.1"
-path = ".fixlang/deps/minilib-common_0.2.1"
+version = "0.3.0"
+path = ".fixlang/deps/minilib-common_0.3.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "291adcdc6cf4001353a808dcb162ed744f513147"
+rev = "e9ab46a77d52cc5f6177c6dbe0fed8ebfa5ac73d"
 
 [[dependencies]]
 name = "character"
