@@ -5,20 +5,24 @@ import Minilib.IO.Platform;
 import Minilib.Text.StringEx;
 import Minilib.Testing.UnitTest;
 
-test_uname: TestCase;
-test_uname = (
-    make_test("test_uname") $ |_| (
-        let _ = *if false {
-            println(
-                [uname.@sysname, uname.@nodename, uname.@release, uname.@version, uname.@machine]
-                .format("sysname={} nodename={} release={} version={} machine={}")
-            ).lift
-        } else { pure() };
-        let _ = *assert_true("sysname", uname.@sysname != "");
-        let _ = *assert_true("nodename", uname.@nodename != "");
-        let _ = *assert_true("release", uname.@release != "");
-        let _ = *assert_true("version", uname.@version != "");
-        let _ = *assert_true("machine", uname.@machine != "");
+test_get_uname: TestCase;
+test_get_uname = (
+    make_test("get_uname") $ |_| (
+        let uname = *get_uname;
+        when(true,
+            println("uname:");;
+            println("  sysname=" + uname.@sysname);;
+            println("  nodename=" + uname.@nodename);;
+            println("  release=" + uname.@release);;
+            println("  version=" + uname.@version);;
+            println("  machine=" + uname.@machine);;
+            pure()
+        ).lift;;
+        assert_true("sysname", uname.@sysname != "");;
+        assert_true("nodename", uname.@nodename != "");;
+        assert_true("release", uname.@release != "");;
+        assert_true("version", uname.@version != "");;
+        assert_true("machine", uname.@machine != "");;
         pure()
     )
 );
@@ -33,7 +37,7 @@ test_byte_order = (
 main: IO ();
 main = (
     [
-        test_uname,
+        test_get_uname,
         test_byte_order,
         TestCase::empty
     ]

@@ -1,11 +1,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <time.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 int minilib_iofs_stat(const char* pathname, uint64_t *ret)
 {
@@ -52,3 +54,41 @@ size_t minilib_iofs_readdir(void* dir_handle, uint8_t *buf, size_t bufsize)
     memcpy(buf, dent->d_name, len);  // Copy to a byte array (not null-terminated)
     return len;
 }
+
+static char* _copy_str(char** p_buf, size_t* p_bufsize, char* src)
+{
+    size_t copy_size = strlen(src) + 1;
+    if (copy_size > *p_bufsize) {
+        *p_bufsize = 0;
+        return NULL;
+    }
+    char* dest = *p_buf;
+    strcpy(dest, src);
+    *p_buf += copy_size;
+    *p_bufsize -= copy_size;
+    return dest;
+}
+
+int minilib_io_platform_uname(char *buf, size_t bufsize, char** out_names, size_t out_names_size)
+{
+    if (out_names_size < 5) {
+        errno = EINVAL;
+        return -1;
+    }
+    struct utsname uts;
+    int err = uname(&uts);
+    if (err != 0) {
+        return -1;
+    }
+    out_names[0] = _copy_str(&buf, &bufsize, uts.sysname);
+    out_names[1] = _copy_str(&buf, &bufsize, uts.nodename);
+    out_names[2] = _copy_str(&buf, &bufsize, uts.release);
+    out_names[3] = _copy_str(&buf, &bufsize, uts.version);
+    out_names[4] = _copy_str(&buf, &bufsize, uts.machine);
+    if (bufsize == 0) {
+        errno = EMSGSIZE;   // Message too long
+        return -1;
+    }
+    return 0;
+}
+
