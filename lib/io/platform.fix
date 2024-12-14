@@ -86,11 +86,11 @@ get_uname = (
     from_io_result $
     buf.flip(borrow_boxed_io) $ |p_buf|
     names.flip(borrow_boxed_io) $ |p_names|
-    let res = *FFI_CALL_IO[I32 minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
+    let res = *FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
         p_buf, bufsize.to_CSizeT,
         p_names, names_size.to_CSizeT
     ];
-    if res != 0_I32 {
+    if res.to_I64 != 0 {
         pure $ err $ "uname failed!: " + *get_last_error
     };
     let from_c_str = |ptr| if ptr == nullptr { "" } else { String::_unsafe_from_c_str_ptr(ptr) };
