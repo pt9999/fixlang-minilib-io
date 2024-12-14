@@ -32,7 +32,14 @@ A type of name and information of current kernel.
 
 The byte order of platform.
 
+### `get_uname : Std::IO::IOFail Minilib.IO.Platform::UName`
+
+Gets the name and information of current kernel.
+It calls POSIX C function `uname()`.
+
 ### `uname : Minilib.IO.Platform::UName`
+
+NOTE: `uname` is deprecated. Please use `get_uname`.
 
 The name and information of current kernel.
 Calls POSIX C function `uname()`, and split the result by null characters.
