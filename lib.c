@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <time.h>
+#include <signal.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -87,6 +88,111 @@ int minilib_io_platform_uname(char *buf, size_t bufsize, char** out_names, size_
     out_names[4] = _copy_str(&buf, &bufsize, uts.machine);
     if (bufsize == 0) {
         errno = EMSGSIZE;   // Message too long
+        return -1;
+    }
+    return 0;
+}
+
+struct signal_defs {
+    const char* name;
+    int signum;
+} signal_defs[] = {
+    { "SIGHUP", SIGHUP },
+    { "SIGINT", SIGINT },
+    { "SIGQUIT", SIGQUIT },
+    { "SIGILL", SIGILL },
+    { "SIGTRAP", SIGTRAP },
+    { "SIGABRT", SIGABRT },
+    { "SIGIOT", SIGIOT },
+    { "SIGBUS", SIGBUS },
+    { "SIGFPE", SIGFPE },
+    { "SIGKILL", SIGKILL },
+    { "SIGUSR1", SIGUSR1 },
+    { "SIGSEGV", SIGSEGV },
+    { "SIGUSR2", SIGUSR2 },
+    { "SIGPIPE", SIGPIPE },
+    { "SIGALRM", SIGALRM },
+    { "SIGTERM", SIGTERM },
+    { "SIGSTKFLT", SIGSTKFLT },
+    { "SIGCHLD", SIGCHLD },
+    { "SIGCONT", SIGCONT },
+    { "SIGSTOP", SIGSTOP },
+    { "SIGTSTP", SIGTSTP },
+    { "SIGTTIN", SIGTTIN },
+    { "SIGTTOU", SIGTTOU },
+    { "SIGURG", SIGURG },
+    { "SIGXCPU", SIGXCPU },
+    { "SIGXFSZ", SIGXFSZ },
+    { "SIGVTALRM", SIGVTALRM },
+    { "SIGPROF", SIGPROF },
+    { "SIGWINCH", SIGWINCH },
+    { "SIGIO", SIGIO },
+    { "SIGPWR", SIGPWR },
+    { "SIGSYS", SIGSYS },
+};
+
+typedef void (*sighandler_t)(int);
+
+struct sighandler_defs {
+    const char* name;
+    sighandler_t handler;
+} sighandler_defs[] = {
+    { "SIG_IGN", SIG_IGN },
+    { "SIG_DFL", SIG_DFL },
+};
+
+static int _find_signal(const char* signal_name)
+{
+    for (int i = 0; i < sizeof(signal_defs) / sizeof(signal_defs[0]); i++) {
+        if (strcmp(signal_defs[i].name, signal_name) == 0) {
+            return signal_defs[i].signum;
+        }
+    }
+    errno = EINVAL;
+    return -1;
+}
+
+static sighandler_t _find_sighandler(const char* sighandler_name)
+{
+    for (int i = 0; i < sizeof(sighandler_defs) / sizeof(sighandler_defs[0]); i++) {
+        if (strcmp(sighandler_defs[i].name, sighandler_name) == 0) {
+            return sighandler_defs[i].handler;
+        }
+    }
+    errno = EINVAL;
+    return (sighandler_t) -1;
+}
+
+int minilib_io_signal_set_signal_handler(const char* signal_name, const char* sighandler_name)
+{
+    errno = 0;
+
+    int signum = _find_signal(signal_name);
+    sighandler_t handler = _find_sighandler(sighandler_name);
+
+    if (errno != 0) {
+        return -1;
+    }
+
+    sighandler_t old_handler = signal(signum, handler);
+    if (old_handler == SIG_ERR) {
+        return -1;
+    }
+    return 0;
+}
+
+int minilib_io_signal_kill_process(int pid, const char* signal_name)
+{
+    errno = 0;
+
+    int signum = _find_signal(signal_name);
+
+    if (errno != 0) {
+        return -1;
+    }
+
+    int err = kill(pid, signum);
+    if (err != 0) {
         return -1;
     }
     return 0;

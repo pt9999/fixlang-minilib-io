@@ -1,0 +1,51 @@
+module SignalTest;
+
+import Minilib.IO.Signal;
+import Minilib.Testing.UnitTest;
+
+getpid: IO I64;
+getpid = (
+    FFI_CALL_IO[CInt getpid()]
+    .map(to_I64)
+);
+
+test_set_signal_handler_kill_process: TestCase;
+test_set_signal_handler_kill_process = (
+    make_test("test_set_signal_handler_kill_process") $ |_|
+    println("setting signal handler").lift;;
+    set_signal_handler("SIGTERM", "SIG_IGN");;
+    println("sending signal").lift;;
+    let pid = *getpid.lift;
+    kill_process(pid, "SIGTERM");;
+    println("sending signal done").lift;;
+    pure()
+);
+
+test_set_signal_handler_invalid_argument: TestCase;
+test_set_signal_handler_invalid_argument = (
+    make_test("test_set_signal_handler_invalid_argument") $ |_|
+    let res = *set_signal_handler("XXX", "SIG_IGN").to_result.lift;
+    assert_equal("res", err $ "set_signal_handler failed!: Invalid argument", res);;
+    let res = *set_signal_handler("SIGTERM", "XXX").to_result.lift;
+    assert_equal("res", err $ "set_signal_handler failed!: Invalid argument", res);;
+    pure()
+);
+
+test_kill_process_invalid_argument: TestCase;
+test_kill_process_invalid_argument = (
+    make_test("test_kill_process_invalid_argument") $ |_|
+    let pid = *getpid.lift;
+    let res = *kill_process(pid, "XXX").to_result.lift;
+    assert_equal("res", err $ "kill_process failed!: Invalid argument", res);;
+    pure()
+);
+
+main: IO ();
+main = (
+    [
+        test_set_signal_handler_kill_process,
+        test_set_signal_handler_invalid_argument,
+        test_kill_process_invalid_argument,
+    ]
+    .run_test_driver
+);

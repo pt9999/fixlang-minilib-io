@@ -6,6 +6,7 @@ import ErrnoTest;
 import FileSystemTest;
 import PathTest;
 import PlatformTest;
+import SignalTest;
 
 testsuite: TestSuite;
 testsuite = [
@@ -13,6 +14,7 @@ testsuite = [
     ("FileSystemTest", FileSystemTest::main),
     ("PathTest", PathTest::main),
     ("PlatformTest", PlatformTest::main),
+    ("SignalTest", SignalTest::main),
 ];
 
 
