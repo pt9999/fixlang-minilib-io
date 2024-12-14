@@ -107,14 +107,10 @@ get_uname = (
 // The byte order of platform.
 byte_order: ByteOrder;
 byte_order = (
-    let uts = Platform::uname;
-    // aarch64-linux-gnu (ChromeBook, Debian 11)
-    if uts.@sysname == "Linux" && uts.@machine == "aarch64" {
+    let bytes = 0x1234_U16.to_bytes;
+    if bytes.@(0) == 0x12_U8 {
+        ByteOrder::big_endian()
+    } else {
         ByteOrder::little_endian()
-    };
-    // x86_64-linux-gnu (WSL 2, Ubuntu 22.04)
-    if uts.@sysname == "Linux" && uts.@machine == "x86_64" {
-        ByteOrder::little_endian()
-    };
-    undefined("Currently this platform is not supported: sysname="+uts.@sysname+" machine=" + uts.@machine)
+    }
 );
