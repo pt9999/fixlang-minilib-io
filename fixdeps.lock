@@ -1,42 +1,6 @@
 proj_file_hash = "2717ee48fde7c7d89350809ffb64f3d6"
 
 [[dependencies]]
-name = "minilib-binary"
-version = "0.1.6"
-path = ".fixlang/deps/minilib-binary_0.1.6"
-
-[dependencies.git]
-repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "86ec8949cd8fc6eaeb7008d722d061f466892383"
-
-[[dependencies]]
-name = "minilib-common"
-version = "0.3.0"
-path = ".fixlang/deps/minilib-common_0.3.0"
-
-[dependencies.git]
-repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "e9ab46a77d52cc5f6177c6dbe0fed8ebfa5ac73d"
-
-[[dependencies]]
-name = "character"
-version = "1.0.0"
-path = ".fixlang/deps/character_1.0.0"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-character.git"
-rev = "13e128d2b87a729c4e73d986994a5cedcf3e8f49"
-
-[[dependencies]]
-name = "time"
-version = "1.0.0"
-path = ".fixlang/deps/time_1.0.0"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "0df92cf1c3ffc148d658c1a554c94105aef13520"
-
-[[dependencies]]
 name = "hashmap"
 version = "1.0.0"
 path = ".fixlang/deps/hashmap_1.0.0"
@@ -62,3 +26,39 @@ path = ".fixlang/deps/asynctask_1.0.0"
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-asynctask.git"
 rev = "6b36519aade839ecb28ec236bc4cabe37416f398"
+
+[[dependencies]]
+name = "minilib-binary"
+version = "0.1.7"
+path = ".fixlang/deps/minilib-binary_0.1.7"
+
+[dependencies.git]
+repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
+rev = "c39190c6444373ecef9784a548f791425e3e951b"
+
+[[dependencies]]
+name = "minilib-common"
+version = "0.3.1"
+path = ".fixlang/deps/minilib-common_0.3.1"
+
+[dependencies.git]
+repo = "https://github.com/pt9999/fixlang-minilib-common.git"
+rev = "6723416967dda67aecf68c872c824dcec6878e2b"
+
+[[dependencies]]
+name = "character"
+version = "1.0.0"
+path = ".fixlang/deps/character_1.0.0"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-character.git"
+rev = "13e128d2b87a729c4e73d986994a5cedcf3e8f49"
+
+[[dependencies]]
+name = "time"
+version = "1.0.0"
+path = ".fixlang/deps/time_1.0.0"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
+rev = "0df92cf1c3ffc148d658c1a554c94105aef13520"
