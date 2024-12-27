@@ -1,6 +1,6 @@
 [general]
 name = "minilib-io"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["pt9999"]
 license = "MIT"
 
