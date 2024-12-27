@@ -29,7 +29,7 @@ basename = |path| (
     if opt.is_none {
         path
     };
-    let name = path.substring(opt.as_some + 1, path.get_size);
+    let name = path.get_sub(opt.as_some + 1, path.get_size);
     name
 );
 
@@ -51,7 +51,7 @@ dirname = |path| (
     if opt.as_some == 0 {
         "/"
     };
-    let parent_dir = path.substring(0, opt.as_some);
+    let parent_dir = path.get_sub(0, opt.as_some);
     parent_dir
 );
 
