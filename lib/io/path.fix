@@ -66,8 +66,8 @@ relativize = |target, base| (
     if base_root != target_root {
         err $ "different type of path"
     };
-    let bases = base.split_ex("/").filter(|s| !s.is_empty).to_array;
-    let targets = target.split_ex("/").filter(|s| !s.is_empty).to_array;
+    let bases = base.split("/").filter(|s| !s.is_empty).to_array;
+    let targets = target.split("/").filter(|s| !s.is_empty).to_array;
     let i = loop(
         0, |i|
         if i >= bases.get_size { break $ i };
