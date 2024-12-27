@@ -101,21 +101,21 @@ namespace FileStat {
     st_blocks = |file_stat| file_stat.@data.@(9);
 
     st_atim: FileStat -> Time;
-    st_atim = |file_stat| Time { 
-        sec: file_stat.@data.@(10).to_I64, 
-        nanosec: file_stat.@data.@(11).to_U32, 
+    st_atim = |file_stat| Time {
+        sec: file_stat.@data.@(10).to_I64,
+        nanosec: file_stat.@data.@(11).to_U32,
     };
 
     st_mtim: FileStat -> Time;
-    st_mtim = |file_stat| Time { 
-        sec: file_stat.@data.@(12).to_I64, 
-        nanosec: file_stat.@data.@(13).to_U32, 
+    st_mtim = |file_stat| Time {
+        sec: file_stat.@data.@(12).to_I64,
+        nanosec: file_stat.@data.@(13).to_U32,
     };
 
     st_ctim: FileStat -> Time;
-    st_ctim = |file_stat| Time { 
-        sec: file_stat.@data.@(14).to_I64, 
-        nanosec: file_stat.@data.@(15).to_U32, 
+    st_ctim = |file_stat| Time {
+        sec: file_stat.@data.@(14).to_I64,
+        nanosec: file_stat.@data.@(15).to_U32,
     };
 
     st_atime: FileStat -> U64;
@@ -226,7 +226,7 @@ _readdir = |dir_handle| (
         };
         pure $ ""
     };
-    let buf = buf.subarray(0, len.to_I64);
+    let buf = buf.get_sub(0, len.to_I64);
     pure $ buf._unsafe_to_string
 );
 

@@ -76,7 +76,7 @@ relativize = |target, base| (
         continue $ i + 1
     );
     let output = Array::fill(bases.get_size - i, "..");
-    let output = output.append(targets.subarray(i, targets.get_size));
+    let output = output.append(targets.get_sub(i, targets.get_size));
     let output = output.to_iter.join("/");
     ok $ output
 );
