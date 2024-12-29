@@ -131,8 +131,13 @@ test_file_stat = (
     println("st_atime=" + file_stat.st_atime.to_string).lift;;
     println("st_mtime=" + file_stat.st_mtime.to_string).lift;;
     println("st_ctime=" + file_stat.st_ctime.to_string).lift;;
-    assert_true("is_file", file_stat.is_file);;
-    assert_true("!is_dir", !file_stat.is_dir);;
+    assert_true("file_stat.is_file", file_stat.is_file);;
+    assert_true("!file_stat.is_dir", !file_stat.is_dir);;
+
+    let dir_path = "tests/io";
+    let dir_stat = *stat(dir_path);
+    assert_true("!dir_stat.is_file", !dir_stat.is_file);;
+    assert_true("dir_stat.is_dir", dir_stat.is_dir);;
     pure()
 );
 

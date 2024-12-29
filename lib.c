@@ -36,6 +36,16 @@ int minilib_iofs_stat(const char* pathname, uint64_t *ret)
     return 0;
 }
 
+int minilib_iofs_stat_mode_is_file(uint32_t mode)
+{
+    return S_ISREG(mode) ? 1 : 0;
+}
+
+int minilib_iofs_stat_mode_is_dir(uint32_t mode)
+{
+    return S_ISDIR(mode) ? 1 : 0;
+}
+
 size_t minilib_iofs_readdir(void* dir_handle, uint8_t *buf, size_t bufsize)
 {
     if (dir_handle == NULL || bufsize <= 0) {

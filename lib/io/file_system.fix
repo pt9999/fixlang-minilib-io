@@ -62,13 +62,17 @@ namespace FileStat {
 
     // Returns true if it is a regular file.
     is_file: FileStat -> Bool;
-    is_file = |file_stat| file_stat.st_mode.bit_and(/* 0o0170000 = */ 61440_U32) ==
-                        /* 0o0100000 = */ 32768_U32;
+    is_file = |file_stat| (
+        FFI_CALL[CInt minilib_iofs_stat_mode_is_file(U32), file_stat.st_mode]
+        != 0.to_CInt
+    );
 
     // Returns true if it is a directory.
     is_dir: FileStat -> Bool;
-    is_dir = |file_stat| file_stat.st_mode.bit_and(/* 0o0170000 = */ 61440_U32) ==
-                        /* 0o0040000 = */ 16384_U32;
+    is_dir = |file_stat| (
+        FFI_CALL[CInt minilib_iofs_stat_mode_is_dir(U32), file_stat.st_mode]
+        != 0.to_CInt
+    );
 
     st_dev: FileStat -> U64;
     st_dev = |file_stat| file_stat.@data.@(0);
