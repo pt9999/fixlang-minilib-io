@@ -85,11 +85,12 @@ get_uname = (
 
     from_io_result $
     buf.flip(borrow_boxed_io) $ |p_buf|
-    names.flip(borrow_boxed_io) $ |p_names|
-    let res = *FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
-        p_buf, bufsize.to_CSizeT,
-        p_names, names_size.to_CSizeT
-    ];
+    let (names, res) = *names.mutate_boxed_io(|p_names|
+        FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
+            p_buf, bufsize.to_CSizeT,
+            p_names, names_size.to_CSizeT
+        ]
+    );
     if res.to_I64 != 0 {
         pure $ err $ "uname failed!: " + *get_last_error
     };
