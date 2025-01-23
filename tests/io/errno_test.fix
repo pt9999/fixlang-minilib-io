@@ -8,7 +8,7 @@ test_get_last_error = (
     let testname = "test_get_last_error";
     make_test(testname) $ |_|
     let path = "/no/such/file/exists";
-    let errmsg = *open_file(Path::parse(path).as_some, "r")
+    let errmsg = *open_file(path, "r")
         .map(|fh| "")
         .try(|errmsg| pure $ errmsg)
         .lift;

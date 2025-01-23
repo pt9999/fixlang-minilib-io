@@ -17,7 +17,7 @@ test_fdopen = (
     write_string(fh, "test");;
     fflush(fh);;
     close_file(fh).lift;;
-    let str = *read_file_string(Path::parse(path).as_some);
+    let str = *read_file_string(path);
     unlink(path);;
     assert_equal("eq", "test", str);;
     pure()
