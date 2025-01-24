@@ -29,7 +29,7 @@ Checks if the byte is a path separator. Currently only '/' is supported.
 
 `join_paths(path_segments)` joins segments into a path.
 
-### `relativize : Std::String -> Std::String -> Std::Result Std::String Std::String`
+### `relativize : Std::String -> Std::String -> Std::Result Std::ErrMsg Std::String`
 
 `base.relativize(target)` constructs a relative path from `base` to `target`.
 `base` and `target` should have the same type (i.e. relative path or absolute path).
