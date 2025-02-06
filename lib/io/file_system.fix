@@ -144,7 +144,7 @@ find_files = |dir_path| (
     let output = Array::empty(10);
     let files = *list_dir(dir_path);
     files.to_iter.loop_iter_m(
-        output, |output, file|
+        output, |file, output|
         let file_path = dir_path + file;
         if *directory_exists(file_path).lift {
             let output = output.append(*find_files(file_path));

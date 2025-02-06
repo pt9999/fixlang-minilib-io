@@ -32,7 +32,7 @@ uname = (
     };
     /*
     let dump = buf.to_iter.zip(Iterator::count_up(0)).fold(
-        Array::empty(0), |dump, (b, i)|
+        Array::empty(0), |(b, i), dump|
         let dump = dump.push_back(encode_hex_char(b.shift_left(4_U8).bit_and(15_U8)))
             .push_back(encode_hex_char(b.bit_and(15_U8)));
         if i % 16 == 15 { dump.push_back('\n') } else { dump }

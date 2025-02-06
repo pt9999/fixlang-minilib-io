@@ -150,7 +150,7 @@ test_find_files = (
     let file_paths = *find_files(dir_path);
 
     let _ = *file_paths.to_iter.fold_m(
-        (), |_, file_path|
+        (), |file_path, _|
         let actual = *file_exists(file_path).lift;
         assert_equal("file exists", true, actual);;
         pure()  // println(file_path).lift
@@ -197,7 +197,7 @@ test_realpath = (
     let testname = "test_realpath";
     make_test(testname) $ |_|
     let dir = *Iterator::range(0,20).loop_iter_m(
-        ".", |dir, i|
+        ".", |i, dir|
         let resolved = *realpath(dir);
         eval *println((i, dir, resolved).format("{}: {} = {}")).lift;
         if resolved == "/" { break_m $ dir };
