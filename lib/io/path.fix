@@ -11,7 +11,7 @@ is_path_sep = |c| c == '/';
 join_paths: Array String -> String;
 join_paths = |path_segments| (
     path_segments.to_iter.fold(
-        "", |result, segment|
+        "", |segment, result|
         if result == "" {
             segment
         };
