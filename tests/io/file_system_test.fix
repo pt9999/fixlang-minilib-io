@@ -2,6 +2,7 @@ module FileSystemTest;
 
 import AsyncTask;
 
+import Minilib.Common.IOEx;
 import Minilib.IO.FileSystem;
 import Minilib.Text.StringEx;
 import Minilib.Testing.UnitTest;
@@ -256,8 +257,6 @@ main = (
         test_creat_unlink,
         test_mkdir_rmdir,
         test_pipe,
-        // TODO: add test for `fflush`
-        // TODO: add test for `set_unbuffered_mode`
         TestCase::empty
     ]
     .run_test_driver
