@@ -1,27 +1,35 @@
-# `module Minilib.IO.Errno`
+# Minilib.IO.Errno
+
+Defined in minilib-io@0.5.1
 
 Functions for `errno` which is set by system calls and some library functions.
 
-# Types and aliases
+## Values
 
-# Traits and aliases
+### namespace Minilib.IO.Errno
 
-# Trait implementations
+#### get_last_error
 
-# Values
-
-## `namespace Minilib.IO.Errno`
-
-### `get_last_error : Std::IO Std::String`
+Type: `Std::IO Std::String`
 
 Gets the error message corresponding to the last error number.
 
-### `strerror : Std::I32 -> Std::IO Std::String`
+#### strerror
+
+Type: `Std::I32 -> Std::IO Std::String`
 
 Converts the error number returned by `get_errno` to a string.
 This function may have race conditions, but is more portable.
 
-### `strerror_r : Std::I32 -> Std::IO Std::String`
+#### strerror_r
+
+Type: `Std::I32 -> Std::IO Std::String`
 
 Converts the error number returned by `get_errno` to a string.
 This function has no race conditions, but is less portable.  (This function is GNU C library specific)
+
+## Types and aliases
+
+## Traits and aliases
+
+## Trait implementations
