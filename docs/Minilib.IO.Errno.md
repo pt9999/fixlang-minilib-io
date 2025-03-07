@@ -1,6 +1,6 @@
 # Minilib.IO.Errno
 
-Defined in minilib-io@0.5.1
+Defined in minilib-io@0.6.0
 
 Functions for `errno` which is set by system calls and some library functions.
 
