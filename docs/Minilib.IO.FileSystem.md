@@ -22,7 +22,8 @@ Type: `Minilib.IO.FileSystem::DirHandle -> Std::IO::IOFail Std::String`
 Type: `Std::String -> Std::U32 -> Std::IO::IOFail Std::I32`
 
 Creates a new file or rewrites an existing one.
-For details, see Linux manual page for [creat()](https://man7.org/linux/man-pages/man3/creat.3p.html).
+
+For details, see Linux manual page for [creat(3p)](https://man7.org/linux/man-pages/man3/creat.3p.html).
 
 #### directory_exists
 
@@ -35,7 +36,8 @@ Returns true if the specified directory exists.
 Type: `Std::I32 -> Std::String -> Std::IO::IOFail Std::IO::IOHandle`
 
 Associates a stream with a file descriptor.
-For details, see Linux manual page for [fdopen()](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
+
+For details, see Linux manual page for [fdopen(3p)](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
 
 #### file_exists
 
@@ -49,6 +51,12 @@ Type: `Std::String -> Std::IO::IOFail (Std::Array Std::String)`
 
 `find_files(dir_path)` finds all files under
 specified directory and its subdirectories.
+
+Example:
+```
+find_files("./lib")
+==> ["./lib/io/errno.fix","./lib/io/file_system.fix","./lib/io/path.fix","./lib/io/platform.fix","./lib/io/signal.fix"]
+```
 
 #### list_dir
 
@@ -82,7 +90,8 @@ Type: `Std::IO::IOFail (Std::IO::IOHandle, Std::IO::IOHandle)`
 
 Creates a pipe stream. It returns `(read_fh, write_fh)` where `read_fd` is the stream of
 read-end of the pipe, and `write_fd` is the stream of write-end of the pipe.
-For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
+
+For details, see Linux manual page for [pipe(2)](https://man7.org/linux/man-pages/man2/pipe.2.html).
 
 #### pipe
 
@@ -90,14 +99,16 @@ Type: `Std::IO::IOFail (Std::I32, Std::I32)`
 
 Creates a pipe. It returns `(read_fd, write_fd)` where `read_fd` is the file descriptor of
 read-end of the pipe, and `write_fd` is the file descriptor of write-end of the pipe.
-For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
+
+For details, see Linux manual page for [pipe(2)](https://man7.org/linux/man-pages/man2/pipe.2.html).
 
 #### realpath
 
 Type: `Std::String -> Std::IO::IOFail Std::String`
 
 Returns the canonicalized absolute pathname.
-For detials, see Linux manual page for [realpath()](https://man7.org/linux/man-pages/man3/realpath.3.html).
+
+For detials, see Linux manual page for [realpath(3)](https://man7.org/linux/man-pages/man3/realpath.3.html).
 
 #### rmdir
 
@@ -110,7 +121,8 @@ Type: `Std::String -> Std::IO::IOFail ()`
 Type: `Std::String -> Std::IO::IOFail ()`
 
 Deletes a name from the filesystem and possibly the file it refers to.
-For details, see Linux manual page for [unlink()](https://man7.org/linux/man-pages/man2/unlink.2.html).
+
+For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html).
 
 ### namespace Minilib.IO.FileSystem::FileStat
 
@@ -195,6 +207,9 @@ Type: `Minilib.IO.FileSystem::FileStat -> Std::U32`
 Type: `Std::String -> Std::IO::IOFail Minilib.IO.FileSystem::FileStat`
 
 `stat(file_path)` retrieves information about the file pointed to by `file_path`.
+
+For detials, see Linux manual page for [stat(2)](https://man7.org/linux/man-pages/man2/stat.2.html)
+and [stat(3type)](https://man7.org/linux/man-pages/man3/stat.3type.html).
 
 ## Types and aliases
 

@@ -12,6 +12,11 @@ Unix signal handling
 
 Type: `Std::I64 -> Std::String -> Std::IO::IOFail ()`
 
+`kill_process(pid, signal_name)` sends a signal to the process specified by `pid`.
+`signal_name` should be one of `signal_names`.
+
+For details, see see Linux manual page for [kill(2)](https://man7.org/linux/man-pages/man2/kill.2.html).
+
 #### set_signal_handler
 
 Type: `Std::String -> Std::String -> Std::IO::IOFail ()`
