@@ -8,6 +8,13 @@ is_path_sep: U8 -> Bool;
 is_path_sep = |c| c == '/';
 
 // `join_paths(path_segments)` joins segments into a path.
+// Example:
+// ```
+// join_paths(["foo", "bar", "baz"])
+// ==> "foo/bar/baz"
+// join_paths(["/usr/", "local", "bin/fix"])
+// ==> "/usr/local/bin/fix"
+// ```
 join_paths: Array String -> String;
 join_paths = |path_segments| (
     path_segments.to_iter.fold(
@@ -22,6 +29,17 @@ join_paths = |path_segments| (
 );
 
 // `basename(path)` returns the last non-slash component. The trailing slashes are removed.
+// Example:
+// ```
+// basename("foo/bar/")
+// ==> "bar"
+// basename("foo/bar/baz")
+// ==> "baz"
+// basename("foo")
+// ==> "foo"
+// basename("/you/can/specify/absolute/path")
+// ==> "path"
+// ```
 basename: String -> String;
 basename = |path| (
     let path = path.strip_last_bytes(is_path_sep);
@@ -35,6 +53,17 @@ basename = |path| (
 
 // `dirname(path)` returns the path with its last non-slash component and trailing slashes removed.
 // if `path` contains no `/`s, returns `"."`.
+// Example:
+// ```
+// dirname("foo/bar/")
+// ==> "foo"
+// dirname("foo/bar/baz")
+// ==> "foo/bar"
+// dirname("foo")
+// ==> "."
+// dirname("/you/can/specify/absolute/path")
+// ==> "/you/can/specify/absolute"
+// ```
 dirname: String -> String;
 dirname = |path| (
     if path == "" {
@@ -59,6 +88,14 @@ dirname = |path| (
 // `base` and `target` should have the same type (i.e. relative path or absolute path).
 // If only one of `base` and `target` is an absolute path, "different type of path" error is returned.
 // If `base` == `target`, then an empty string is returned.
+// ```
+// "/usr/".relativize("/usr/bin/ls")
+// ==> "bin/ls"
+// "/usr/local".relativize("/usr/bin/ls")
+// ==> "../bin/ls"
+// "foo/bar/baz".relativize("abc/def")
+// ==> "../../../abc/def"
+// ```
 relativize: String -> String -> Result ErrMsg String;
 relativize = |target, base| (
     let base_root = base.starts_with("/");

@@ -20,7 +20,9 @@ test_join_paths = (
             (["a"], "a"),
             (["a", "b", "c"], "a/b/c"),
             (["/a/b/", "/c/d/", "/e/f/"], "/a/b/c/d/e/f/"),
-            (["a/b", "", "c/d", "", "e/f"], "a/b/c/d/e/f")
+            (["a/b", "", "c/d", "", "e/f"], "a/b/c/d/e/f"),
+            (["foo", "bar", "baz"], "foo/bar/baz"),
+            (["/usr/", "local", "bin/fix"], "/usr/local/bin/fix"),
         ],
         |(path_segments, expected)|
         assert_equal("eq", expected, join_paths(path_segments))
@@ -43,7 +45,11 @@ test_basename = (
             ("a", "a"),
             ("a/b", "b"),
             ("a/b/", "b"),
-            ("a/b/c/", "c")
+            ("a/b/c/", "c"),
+            ("foo/bar/", "bar"),
+            ("foo/bar/baz", "baz"),
+            ("foo", "foo"),
+            ("/you/can/specify/absolute/path", "path"),
         ],
         |(path, expected)|
         assert_equal("eq", expected, basename(path))
@@ -64,7 +70,11 @@ test_dirname = (
             ("a", "."),
             ("a/b", "a"),
             ("a/b/", "a"),
-            ("a/b/c/", "a/b")
+            ("a/b/c/", "a/b"),
+            ("foo/bar/", "foo"),
+            ("foo/bar/baz", "foo/bar"),
+            ("foo", "."),
+            ("/you/can/specify/absolute/path", "/you/can/specify/absolute"),
         ],
         |(path, expected)|
         assert_equal("eq", expected, dirname(path))
@@ -92,6 +102,9 @@ test_relativize = (
             ("//a//b//", "//a//c//d", ok $ "../c/d"),
             ("/a/b", "c/d", err $ "different type of path"),
             ("a/b", "/c/d", err $ "different type of path"),
+            ("/usr/", "/usr/bin/ls", ok $ "bin/ls"),
+            ("/usr/local", "/usr/bin/ls", ok $ "../bin/ls"),
+            ("foo/bar/baz", "abc/def", ok $ "../../../abc/def"),
         ],
         |(base, target, expected)|
         let actual = base.relativize(target);
