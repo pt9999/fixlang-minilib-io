@@ -44,6 +44,9 @@ type FileStat = unbox struct {
 
 namespace FileStat {
     // `stat(file_path)` retrieves information about the file pointed to by `file_path`.
+    //
+    // For detials, see Linux manual page for [stat(2)](https://man7.org/linux/man-pages/man2/stat.2.html)
+    // and [stat(3type)](https://man7.org/linux/man-pages/man3/stat.3type.html).
     stat: String -> IOFail FileStat;
     stat = |file_path| (
         pure();; // make it lazy
@@ -138,6 +141,12 @@ namespace FileStat {
 
 // `find_files(dir_path)` finds all files under
 // specified directory and its subdirectories.
+//
+// Example:
+// ```
+// find_files("./lib")
+// ==> ["./lib/io/errno.fix","./lib/io/file_system.fix","./lib/io/path.fix","./lib/io/platform.fix","./lib/io/signal.fix"]
+// ```
 find_files: String -> IOFail (Array String);
 find_files = |dir_path| (
     let dir_path = if dir_path.ends_with("/") { dir_path } else { dir_path + "/" };
@@ -292,7 +301,8 @@ rmdir = |path| (
 //--------------------------------------------------------------------------
 
 // Returns the canonicalized absolute pathname.
-// For detials, see Linux manual page for [realpath()](https://man7.org/linux/man-pages/man3/realpath.3.html).
+//
+// For detials, see Linux manual page for [realpath(3)](https://man7.org/linux/man-pages/man3/realpath.3.html).
 realpath: String -> IOFail String;
 realpath = |path| (
     let p_resolved: Ptr = *path.borrow_c_str_io(|p_path|
@@ -307,7 +317,8 @@ realpath = |path| (
 );
 
 // Creates a new file or rewrites an existing one.
-// For details, see Linux manual page for [creat()](https://man7.org/linux/man-pages/man3/creat.3p.html).
+//
+// For details, see Linux manual page for [creat(3p)](https://man7.org/linux/man-pages/man3/creat.3p.html).
 creat: String -> U32 -> IOFail I32;
 creat = |path, mode| (
     pure();;    // make it lazy
@@ -322,7 +333,8 @@ creat = |path, mode| (
 );
 
 // Deletes a name from the filesystem and possibly the file it refers to.
-// For details, see Linux manual page for [unlink()](https://man7.org/linux/man-pages/man2/unlink.2.html).
+//
+// For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html).
 unlink: String -> IOFail ();
 unlink = |path| (
     pure();;    // make it lazy
@@ -344,7 +356,8 @@ unlink = |path| (
 );
 
 // Associates a stream with a file descriptor.
-// For details, see Linux manual page for [fdopen()](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
+//
+// For details, see Linux manual page for [fdopen(3p)](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
 fdopen: I32 -> String -> IOFail IOHandle;
 fdopen = |fd, mode| (
     pure();;    // make it lazy
@@ -361,7 +374,8 @@ fdopen = |fd, mode| (
 
 // Creates a pipe. It returns `(read_fd, write_fd)` where `read_fd` is the file descriptor of
 // read-end of the pipe, and `write_fd` is the file descriptor of write-end of the pipe.
-// For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
+//
+// For details, see Linux manual page for [pipe(2)](https://man7.org/linux/man-pages/man2/pipe.2.html).
 pipe: IOFail (I32, I32);
 pipe = (
     pure();;    // make it lazy
@@ -380,7 +394,8 @@ pipe = (
 
 // Creates a pipe stream. It returns `(read_fh, write_fh)` where `read_fd` is the stream of
 // read-end of the pipe, and `write_fd` is the stream of write-end of the pipe.
-// For details, see Linux manual page for [pipe()](https://man7.org/linux/man-pages/man2/pipe.2.html).
+//
+// For details, see Linux manual page for [pipe(2)](https://man7.org/linux/man-pages/man2/pipe.2.html).
 open_pipe: IOFail (IOHandle, IOHandle);
 open_pipe = (
     let (read_fd, write_fd) = *pipe;
