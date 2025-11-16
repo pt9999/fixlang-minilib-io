@@ -258,11 +258,11 @@ make_dirs = |dir_path, mode| (
         pure()
     };
     let parent_dir = dirname(dir_path);
-    let _ = *if parent_dir == dir_path {
+    if parent_dir == dir_path {
         pure()  // avoid infinite loop
     } else {
         make_dirs(parent_dir, mode)
-    };
+    };;
     mkdir(dir_path, mode)
 );
 
