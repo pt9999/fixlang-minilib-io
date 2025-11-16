@@ -1,6 +1,6 @@
 # Minilib.IO.FileSystem
 
-Defined in minilib-io@0.6.0
+Defined in minilib-io@0.6.2
 
 File system module. For example, finding files, checks if file or directory exists,
 getting file size and last modified time.
@@ -8,14 +8,6 @@ getting file size and last modified time.
 ## Values
 
 ### namespace Minilib.IO.FileSystem
-
-#### _opendir
-
-Type: `Std::String -> Std::IO::IOFail Minilib.IO.FileSystem::DirHandle`
-
-#### _readdir
-
-Type: `Minilib.IO.FileSystem::DirHandle -> Std::IO::IOFail Std::String`
 
 #### creat
 

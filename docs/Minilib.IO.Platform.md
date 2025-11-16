@@ -1,6 +1,6 @@
 # Minilib.IO.Platform
 
-Defined in minilib-io@0.6.0
+Defined in minilib-io@0.6.2
 
 Get kernel information such as system name, machine archtecture.
 
