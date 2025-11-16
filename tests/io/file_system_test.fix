@@ -3,10 +3,11 @@ module FileSystemTest;
 import AsyncTask;
 
 import Minilib.Common.IOEx;
+import Minilib.Common.TimeEx;
 import Minilib.IO.FileSystem;
 import Minilib.Text.StringEx;
 import Minilib.Testing.UnitTest;
-import Minilib.Common.TimeEx;
+import Minilib.Trait.Traversable;
 
 test_fdopen: TestCase;
 test_fdopen = (
@@ -150,8 +151,8 @@ test_find_files = (
     let dir_path = "tests";
     let file_paths = *find_files(dir_path);
 
-    file_paths.to_iter.fold_m(
-        (), |file_path, _|
+    file_paths.to_iter.foreach_m(
+        |file_path|
         let actual = *file_exists(file_path).lift;
         assert_equal("file exists", true, actual);;
         pure()  // println(file_path).lift
