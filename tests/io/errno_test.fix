@@ -42,6 +42,7 @@ main = (
     [
         test_get_last_error,
         test_strerror,
+        test_strerror_r,    // NOTE: GNU C library specific
         TestCase::empty
     ]
     .run_test_driver
