@@ -202,6 +202,7 @@ test_realpath = (
         ".", |i, dir|
         let resolved = *realpath(dir);
         println((i, dir, resolved).format("{}: {} = {}")).lift;;
+        assert_true("resolved path starts with '/'", resolved.starts_with("/"));;
         if resolved == "/" { break_m $ dir };
         continue_m $ dir + "/.."
     );

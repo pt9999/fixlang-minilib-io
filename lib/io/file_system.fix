@@ -312,6 +312,7 @@ realpath = |path| (
         throw("realpath failed!: " + *get_last_error.lift + ": path=" + path)
     };
     let resolved: String = String::_unsafe_from_c_str_ptr(p_resolved);
+    eval resolved;      // ensure `String::_unsafe_from_c_str_ptr` is called before calling `free()`
     FFI_CALL_IO[() free(Ptr), p_resolved].lift;;
     pure $ resolved
 );
