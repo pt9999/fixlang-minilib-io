@@ -94,7 +94,7 @@ get_uname = (
     if res.to_I64 != 0 {
         pure $ err $ "uname failed!: " + *get_last_error
     };
-    let from_c_str = |ptr| if ptr == nullptr { "" } else { String::_unsafe_from_c_str_ptr(ptr) };
+    let from_c_str = |ptr| if ptr == nullptr { "" } else { String::unsafe_from_c_str_ptr(ptr) };
     let uname = UName {
         sysname: from_c_str(names.@(0)),
         nodename: from_c_str(names.@(1)),
