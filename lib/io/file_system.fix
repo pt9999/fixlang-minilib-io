@@ -207,7 +207,7 @@ _opendir = |dir_path| (
                 + "\ndir_path=" + dir_path)
     };
     pure $ DirHandle {
-        dtor: Destructor::make(dirp, |dirp|
+        dtor: *Destructor::make(dirp, |dirp|
             //eval debug_eprintln ("closing dir handle");
             //eval clear_errno._unsafe_perform;
             let res = *FFI_CALL_IO[I32 closedir(Ptr), dirp];
@@ -218,7 +218,7 @@ _opendir = |dir_path| (
             };
             */
             pure $ nullptr
-        )
+        ).lift
     }
 );
 
@@ -369,7 +369,7 @@ fdopen = |fd, mode| (
     if file_ptr == nullptr {
         throw("fdopen failed!: " + *get_last_error.lift)
     };
-    pure $ IOHandle::from_file_ptr $ file_ptr
+    IOHandle::from_file_ptr(file_ptr).lift
 );
 
 
