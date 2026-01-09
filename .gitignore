@@ -1,5 +1,14 @@
 .fixlang
-.tmp
 .local
-*.o
+.tmp
 tmp.*
+*.tmp
+*.local
+*.so
+*.a
+*.o
+*.out
+*.log
+*.bak
+*.swp
+,*
