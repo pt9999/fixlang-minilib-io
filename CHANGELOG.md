@@ -3,6 +3,8 @@
 - Minilib.IO.FileSystem: Added `chdir`, `getcwd`.
 ### Changed
 - Minilib.IO.FileSystem: Changed most of `I32` to `CInt`.
+### Fixed
+- Minilib.IO.FileSystem: Made most of `IO` and `IOFail` monads to be lazy.
 
 ## 0.6.9
 ### Changed
