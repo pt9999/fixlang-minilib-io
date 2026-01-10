@@ -210,8 +210,8 @@ _opendir = |dir_path| (
         dtor: *Destructor::make(dirp, |dirp|
             //eval debug_eprintln ("closing dir handle");
             //eval clear_errno._unsafe_perform;
-            let res = *FFI_CALL_IO[I32 closedir(Ptr), dirp];
-            /*eval if res != 0_I32 {
+            let res = *FFI_CALL_IO[CInt closedir(Ptr), dirp];
+            /*eval if res != 0.to_CInt {
                 debug_eprintln("closedir failed!: res=" + res.to_string)
             } else {
                 ()
@@ -234,7 +234,7 @@ _readdir = |dir_handle| (
     ).lift;
     if len.to_I64 == 0 {
         let errno = *get_errno.lift;
-        if errno != 0_I32 {
+        if errno != 0.to_CInt {
             throw("readdir failed!: " + *get_last_error.lift)
         };
         pure $ ""
@@ -274,9 +274,9 @@ mkdir = |path, mode| (
     clear_errno.lift;;
     let mode = if mode.is_some { mode.as_some } else { /* 0777 = */ 511_U32 };
     let res = *path.borrow_c_str_io(|p_path|
-        FFI_CALL_IO[I32 mkdir(Ptr, U32), p_path, mode]
+        FFI_CALL_IO[CInt mkdir(Ptr, U32), p_path, mode]
     ).lift;
-    if res != 0_I32 {
+    if res != 0.to_CInt {
         throw("mkdir failed!: " + *get_last_error.lift)
     };
     pure()
@@ -287,9 +287,9 @@ rmdir: String -> IOFail ();
 rmdir = |path| (
     clear_errno.lift;;
     let res = *path.borrow_c_str_io(|p_path|
-        FFI_CALL_IO[I32 rmdir(Ptr), p_path]
+        FFI_CALL_IO[CInt rmdir(Ptr), p_path]
     ).lift;
-    if res != 0_I32 {
+    if res != 0.to_CInt {
         throw("rmdir failed!: " + *get_last_error.lift)
     };
     pure()
@@ -316,9 +316,9 @@ chdir: Path -> IOFail ();
 chdir = |path| (
     clear_errno.lift;;
     let res = *path.borrow_c_str_io(|p_path|
-        FFI_CALL_IO[I32 chdir(Ptr), p_path]
+        FFI_CALL_IO[CInt chdir(Ptr), p_path]
     ).lift;
-    if res != 0_I32 {
+    if res != 0.to_CInt {
         throw("chdir failed!: " + *get_last_error.lift)
     };
     pure()
@@ -348,14 +348,14 @@ realpath = |path| (
 // Creates a new file or rewrites an existing one.
 //
 // For details, see Linux manual page for [creat(3p)](https://man7.org/linux/man-pages/man3/creat.3p.html).
-creat: String -> U32 -> IOFail I32;
+creat: String -> U32 -> IOFail CInt;
 creat = |path, mode| (
     pure();;    // make it lazy
     clear_errno.lift;;
     let fd = *path.borrow_c_str_io(|p_path|
-        FFI_CALL_IO[I32 creat(Ptr, U32), p_path, mode]
+        FFI_CALL_IO[CInt creat(Ptr, U32), p_path, mode]
     ).lift;
-    if fd == -1_I32 {
+    if fd == -1.to_CInt {
         throw("creat failed!: " + *get_last_error.lift)
     };
     pure $ fd
@@ -368,17 +368,10 @@ unlink: String -> IOFail ();
 unlink = |path| (
     pure();;    // make it lazy
     clear_errno.lift;;
-    /*
-    let res = *(IO::from_runner $ |ios|
-        path.borrow_c_str(|p_path|
-            FFI_CALL_IOS[I32 unlink(Ptr), p_path, ios]
-        )
-    ).lift;
-    */
     let res = *path.borrow_c_str_io(|p_path|
-        FFI_CALL_IO[I32 unlink(Ptr), p_path]
+        FFI_CALL_IO[CInt unlink(Ptr), p_path]
     ).lift;
-    if res == -1_I32 {
+    if res == -1.to_CInt {
         throw("unlink failed!: " + *get_last_error.lift)
     };
     pure()
@@ -387,12 +380,12 @@ unlink = |path| (
 // Associates a stream with a file descriptor.
 //
 // For details, see Linux manual page for [fdopen(3p)](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
-fdopen: I32 -> String -> IOFail IOHandle;
+fdopen: CInt -> String -> IOFail IOHandle;
 fdopen = |fd, mode| (
     pure();;    // make it lazy
     clear_errno.lift;;
     let file_ptr = *mode.borrow_c_str_io(|p_mode|
-        FFI_CALL_IO[Ptr fdopen(I32, Ptr), fd, p_mode]
+        FFI_CALL_IO[Ptr fdopen(CInt, Ptr), fd, p_mode]
     ).lift;
     if file_ptr == nullptr {
         throw("fdopen failed!: " + *get_last_error.lift)
@@ -405,15 +398,15 @@ fdopen = |fd, mode| (
 // read-end of the pipe, and `write_fd` is the file descriptor of write-end of the pipe.
 //
 // For details, see Linux manual page for [pipe(2)](https://man7.org/linux/man-pages/man2/pipe.2.html).
-pipe: IOFail (I32, I32);
+pipe: IOFail (CInt, CInt);
 pipe = (
     pure();;    // make it lazy
     clear_errno.lift;;
-    let pipefd: Array I32 = Array::fill(2, 0_I32);
+    let pipefd: Array CInt = Array::fill(2, 0.to_CInt);
     let res = *pipefd.borrow_boxed_io(|p_pipefd|
-        FFI_CALL_IO[I32 pipe(Ptr), p_pipefd]
+        FFI_CALL_IO[CInt pipe(Ptr), p_pipefd]
     ).lift;
-    if res == -1_I32 {
+    if res == -1.to_CInt {
         throw("pipe failed!: " + *get_last_error.lift)
     };
     let read_fd = pipefd.@(0);

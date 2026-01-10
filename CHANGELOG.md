@@ -1,6 +1,8 @@
 ## 0.6.10
 ### Added
-- Minilib.IO.FileSystem: add `chdir`, `getcwd`
+- Minilib.IO.FileSystem: Added `chdir`, `getcwd`.
+### Changed
+- Minilib.IO.FileSystem: Changed most of `I32` to `CInt`.
 
 ## 0.6.9
 ### Changed
