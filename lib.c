@@ -27,12 +27,21 @@ int minilib_iofs_stat(const char* pathname, uint64_t *ret)
     ret[7] = (uint64_t)st.st_size;
     ret[8] = (uint64_t)st.st_blksize;
     ret[9] = (uint64_t)st.st_blocks;
+#ifdef __APPLE__
+    ret[10] = (uint64_t)st.st_atimespec.tv_sec;
+    ret[11] = (uint64_t)st.st_atimespec.tv_nsec;
+    ret[12] = (uint64_t)st.st_mtimespec.tv_sec;
+    ret[13] = (uint64_t)st.st_mtimespec.tv_nsec;
+    ret[14] = (uint64_t)st.st_ctimespec.tv_sec;
+    ret[15] = (uint64_t)st.st_ctimespec.tv_nsec;
+#else
     ret[10] = (uint64_t)st.st_atim.tv_sec;
     ret[11] = (uint64_t)st.st_atim.tv_nsec;
     ret[12] = (uint64_t)st.st_mtim.tv_sec;
     ret[13] = (uint64_t)st.st_mtim.tv_nsec;
     ret[14] = (uint64_t)st.st_ctim.tv_sec;
     ret[15] = (uint64_t)st.st_ctim.tv_nsec;
+#endif
     return 0;
 }
 
@@ -123,7 +132,9 @@ struct signal_defs {
     { "SIGPIPE", SIGPIPE },
     { "SIGALRM", SIGALRM },
     { "SIGTERM", SIGTERM },
+#ifdef SIGSTKFLT
     { "SIGSTKFLT", SIGSTKFLT },
+#endif
     { "SIGCHLD", SIGCHLD },
     { "SIGCONT", SIGCONT },
     { "SIGSTOP", SIGSTOP },
@@ -137,7 +148,9 @@ struct signal_defs {
     { "SIGPROF", SIGPROF },
     { "SIGWINCH", SIGWINCH },
     { "SIGIO", SIGIO },
+#ifdef SIGPWR
     { "SIGPWR", SIGPWR },
+#endif
     { "SIGSYS", SIGSYS },
 };
 
