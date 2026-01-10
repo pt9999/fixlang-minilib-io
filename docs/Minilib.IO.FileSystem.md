@@ -1,6 +1,6 @@
 # Minilib.IO.FileSystem
 
-Defined in minilib-io@0.6.9
+Defined in minilib-io@0.6.10
 
 File system module. For example, finding files, checks if file or directory exists,
 getting file size and last modified time.
@@ -9,13 +9,28 @@ getting file size and last modified time.
 
 ### namespace Minilib.IO.FileSystem
 
+#### chdir
+
+Type: `Std::Path -> Std::IO::IOFail ()`
+
+`chdir(path)` changes the current working directory of the calling process to the specified directory.
+
+##### Parameters
+
+- `dir_path`: a directory path
+
 #### creat
 
-Type: `Std::String -> Std::U32 -> Std::IO::IOFail Std::I32`
+Type: `Std::String -> Std::U32 -> Std::IO::IOFail Std::FFI::CInt`
 
 Creates a new file or rewrites an existing one.
 
 For details, see Linux manual page for [creat(3p)](https://man7.org/linux/man-pages/man3/creat.3p.html).
+
+##### Parameters
+
+- `path`: a file path to be created
+- `mode`: a file mode of the created file
 
 #### directory_exists
 
@@ -23,19 +38,32 @@ Type: `Std::String -> Std::IO Std::Bool`
 
 Returns true if the specified directory exists.
 
+##### Parameters
+
+- `dir_path`: a directory path
+
 #### fdopen
 
-Type: `Std::I32 -> Std::String -> Std::IO::IOFail Std::IO::IOHandle`
+Type: `Std::FFI::CInt -> Std::String -> Std::IO::IOFail Std::IO::IOHandle`
 
 Associates a stream with a file descriptor.
 
 For details, see Linux manual page for [fdopen(3p)](https://man7.org/linux/man-pages/man3/fdopen.3p.html).
+
+##### Parameters
+
+- `fd`: a file descriptor
+- `mode` a file open mode, such as "r", "w", "a" etc.
 
 #### file_exists
 
 Type: `Std::String -> Std::IO Std::Bool`
 
 Returns true if the specified file exists.
+
+##### Parameters
+
+- `file_path`: a file path
 
 #### find_files
 
@@ -50,6 +78,16 @@ find_files("./lib")
 ==> ["./lib/io/errno.fix","./lib/io/file_system.fix","./lib/io/path.fix","./lib/io/platform.fix","./lib/io/signal.fix"]
 ```
 
+##### Parameters
+
+- `dir_path`: a directory path
+
+#### getcwd
+
+Type: `Std::IO::IOFail Std::String`
+
+`getcwd` returns an absolute pathname of the current working directory.
+
 #### list_dir
 
 Type: `Std::String -> Std::IO::IOFail (Std::Array Std::String)`
@@ -57,6 +95,10 @@ Type: `Std::String -> Std::IO::IOFail (Std::Array Std::String)`
 Lists a directory.
 Returns filenames in the specified directory.
 The filenames will be sorted in lexicographical order.
+
+##### Parameters
+
+- `dir_path`: a directory path
 
 #### make_dirs
 
@@ -68,13 +110,23 @@ If the directory already exists, it does nothing.
 If `mode` is `none()`, octal 0777 is used as a mode.
 This mode is modified by the process's umask in the usual way.
 
+##### Parameters
+
+- `dir_path`: the directory path to be created
+- `mode`: `some()` of a file mode of the created directories, or `none()`
+
 #### mkdir
 
 Type: `Std::String -> Std::Option Std::U32 -> Std::IO::IOFail ()`
 
-`mkdir(path, mode)` creates a directory.
+`mkdir(dir_path, mode)` creates a directory.
 If `mode` is `none()`, octal 0777 is used as a mode.
 This mode is modified by the process's umask in the usual way.
+
+##### Parameters
+
+- `dir_path`: the directory path to be created
+- `mode`: `some()` of a file mode of the created directory, or `none()`
 
 #### open_pipe
 
@@ -87,7 +139,7 @@ For details, see Linux manual page for [pipe(2)](https://man7.org/linux/man-page
 
 #### pipe
 
-Type: `Std::IO::IOFail (Std::I32, Std::I32)`
+Type: `Std::IO::IOFail (Std::FFI::CInt, Std::FFI::CInt)`
 
 Creates a pipe. It returns `(read_fd, write_fd)` where `read_fd` is the file descriptor of
 read-end of the pipe, and `write_fd` is the file descriptor of write-end of the pipe.
@@ -102,11 +154,19 @@ Returns the canonicalized absolute pathname.
 
 For detials, see Linux manual page for [realpath(3)](https://man7.org/linux/man-pages/man3/realpath.3.html).
 
+##### Parameters
+
+- `path`: a file or directory path, which may be a relative path
+
 #### rmdir
 
 Type: `Std::String -> Std::IO::IOFail ()`
 
 `rmdir(path)` deletes a directory, which must be empty.
+
+##### Parameters
+
+- `dir_path`: the directory path to be deleted
 
 #### unlink
 
@@ -116,6 +176,10 @@ Deletes a name from the filesystem and possibly the file it refers to.
 
 For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html).
 
+##### Parameters
+
+- `path`: a file path to be deleted
+
 ### namespace Minilib.IO.FileSystem::FileStat
 
 #### is_dir
@@ -124,11 +188,19 @@ Type: `Minilib.IO.FileSystem::FileStat -> Std::Bool`
 
 Returns true if it is a directory.
 
+##### Parameters
+
+- `file_stat`: a file status obtained by `stat`
+
 #### is_file
 
 Type: `Minilib.IO.FileSystem::FileStat -> Std::Bool`
 
 Returns true if it is a regular file.
+
+##### Parameters
+
+- `file_stat`: a file status obtained by `stat`
 
 #### st_atim
 
@@ -203,6 +275,10 @@ Type: `Std::String -> Std::IO::IOFail Minilib.IO.FileSystem::FileStat`
 For detials, see Linux manual page for [stat(2)](https://man7.org/linux/man-pages/man2/stat.2.html)
 and [stat(3type)](https://man7.org/linux/man-pages/man3/stat.3type.html).
 
+##### Parameters
+
+- `file_path`: a file path
+
 ## Types and aliases
 
 ### namespace Minilib.IO.FileSystem
@@ -211,7 +287,7 @@ and [stat(3type)](https://man7.org/linux/man-pages/man3/stat.3type.html).
 
 Defined as: `type DirHandle = unbox struct { ...fields... }`
 
-[nofixdoc] Type of a directory handle
+Type of a directory handle (used internally)
 
 ##### field `dtor`
 
