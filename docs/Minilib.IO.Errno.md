@@ -1,6 +1,6 @@
 # Minilib.IO.Errno
 
-Defined in minilib-io@0.6.8
+Defined in minilib-io@0.6.9
 
 Functions for `errno` which is set by system calls and some library functions.
 
@@ -25,8 +25,7 @@ This function may have race conditions, but is more portable.
 
 Type: `Std::I32 -> Std::IO Std::String`
 
-Converts the error number returned by `get_errno` to a string.
-This function has no race conditions, but is less portable.  (This function is GNU C library specific)
+Deprecated: Now this function is identical to `strerror`.
 
 ## Types and aliases
 
