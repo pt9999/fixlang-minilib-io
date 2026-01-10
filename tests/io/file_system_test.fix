@@ -194,6 +194,33 @@ test_mkdir_rmdir = (
     pure()
 );
 
+test_getcwd_chdir: TestCase;
+test_getcwd_chdir = (
+    let testname = "test_getcwd_chdir";
+    make_test(testname) $ |_|
+
+    let initial_wd = *getcwd;
+    println("initial_wd=" + initial_wd).lift;;
+    assert_true("initial_wd", initial_wd.ends_with("fixlang-minilib-io"));;
+
+    let tmp_dir = "tmp.test_getcwd_chdir.tmp";
+    let tmp_dir_exists = directory_exists(tmp_dir).lift;
+    when(*tmp_dir_exists, rmdir(tmp_dir));;
+    mkdir(tmp_dir, some(0o755_U32));;
+    assert_true("mkdir", *tmp_dir_exists);;
+
+    let res = *do {
+        chdir(tmp_dir);;
+        let current_wd = *getcwd;
+        println("current_wd=" + current_wd).lift;;
+        assert_true("current_wd", current_wd.ends_with(tmp_dir))
+    }.to_result.lift;
+
+    chdir(initial_wd).try(eprintln).lift;;
+    when(*tmp_dir_exists, rmdir(tmp_dir));;
+    res.from_result
+);
+
 test_realpath: TestCase;
 test_realpath = (
     let testname = "test_realpath";
@@ -258,6 +285,7 @@ main = (
         test_realpath,
         test_creat_unlink,
         test_mkdir_rmdir,
+        test_getcwd_chdir,
         test_pipe,
         TestCase::empty
     ]

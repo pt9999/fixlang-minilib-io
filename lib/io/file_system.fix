@@ -295,6 +295,34 @@ rmdir = |path| (
     pure()
 );
 
+// `getcwd` returns an absolute pathname of the current working directory.
+getcwd: IOFail String;
+getcwd = (
+    pure();;
+    clear_errno.lift;;
+    let bufsize = 1024;     // TODO: use PATH_MAX or pathconf
+    let buf = Array::fill(bufsize, 0_U8);
+    let (buf, res) = *buf.mutate_boxed_io(|p_buf|
+        FFI_CALL_IO[Ptr getcwd(Ptr, CSizeT), p_buf, bufsize.to_CSizeT]
+    ).lift;
+    if res == nullptr {
+        throw("getcwd failed!: " + *get_last_error.lift)
+    };
+    pure $ buf.push_back(0_U8).from_bytes.as_ok
+);
+
+// `chdir(path)` changes the current working directory of the calling process to the specified directory.
+chdir: Path -> IOFail ();
+chdir = |path| (
+    clear_errno.lift;;
+    let res = *path.borrow_c_str_io(|p_path|
+        FFI_CALL_IO[I32 chdir(Ptr), p_path]
+    ).lift;
+    if res != 0_I32 {
+        throw("chdir failed!: " + *get_last_error.lift)
+    };
+    pure()
+);
 
 //--------------------------------------------------------------------------
 //  Files
