@@ -16,18 +16,6 @@ strerror = |errno| (
     pure $ p_errmsg.unsafe_from_c_str_ptr
 );
 
-// Converts the error number returned by `get_errno` to a string.
-// This function has no race conditions, but is less portable.  (This function is GNU C library specific)
+// Deprecated: Now this function is identical to `strerror`.
 strerror_r: I32 -> IO String;
-strerror_r = |errno| (
-    pure();;
-    let bufsize = 1024;
-    let buf = Array::fill(bufsize, 0_U8);
-    buf.borrow_boxed_io(|p_buf|
-        let p_errmsg = *FFI_CALL_IO[Ptr strerror_r(I32, Ptr, CSizeT), errno, p_buf, bufsize.to_CSizeT];
-        // GNU version of strerror_r() sometimes does not change the contents of p_buf.
-        // Only the return value is set properly.
-        // But this is not portable.
-        pure $ p_errmsg.unsafe_from_c_str_ptr
-    )
-);
+strerror_r = strerror;
