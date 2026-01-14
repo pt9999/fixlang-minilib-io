@@ -1,4 +1,13 @@
-proj_file_hash = "95147d6eecd2b03306fc5fb02861144c"
+proj_file_hash = "94ed885ea2e526d98edd08e80a397d39"
+
+[[dependencies]]
+name = "time"
+version = "1.0.2"
+path = ".fixlang/deps/time_1.0.2"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
+rev = "7af8a5c115e7437f94dcb4353807c03d816856f6"
 
 [[dependencies]]
 name = "hashmap"
@@ -17,15 +26,6 @@ path = ".fixlang/deps/hash_1.1.0"
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-hash.git"
 rev = "40d5d04e9b5f5a11c46151d00a98acb6dfdb4e48"
-
-[[dependencies]]
-name = "time"
-version = "1.0.2"
-path = ".fixlang/deps/time_1.0.2"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "7af8a5c115e7437f94dcb4353807c03d816856f6"
 
 [[dependencies]]
 name = "asynctask"
