@@ -1,3 +1,7 @@
+## 0.6.12
+### Changed
+- fixproj.toml: change versions of dependencies to "*"
+
 ## 0.6.10
 ### Added
 - Minilib.IO.FileSystem: Added `chdir`, `getcwd`.
