@@ -2,6 +2,7 @@
 module Minilib.IO.Signal;
 
 import Minilib.IO.Errno;
+import Minilib.Monad.IO;
 
 // An array of supported signal names.
 signal_names: Array String;
@@ -50,8 +51,8 @@ sighandler_names = [
 // `set_signal_handler(signal_name, sighandle_name)` sets the handler for the signal.
 // `signal_name` should be one of `signal_names`.
 // `sighandle_name` should be one of `sighandler_names`.
-set_signal_handler: String -> String -> IOFail ();
-set_signal_handler = |signal_name, sighandler_name| (
+set_signal_handler: [m: MonadIOFail] String -> String -> m ();
+set_signal_handler = |signal_name, sighandler_name| lift_iofail $ do {
     from_io_result $
     signal_name.borrow_c_str_io(|p_signal_name|
         sighandler_name.borrow_c_str_io(|p_sighandler_name|
@@ -64,14 +65,14 @@ set_signal_handler = |signal_name, sighandler_name| (
             pure $ ok $ ()
         )
     )
-);
+};
 
 // `kill_process(pid, signal_name)` sends a signal to the process specified by `pid`.
 // `signal_name` should be one of `signal_names`.
 //
 // For details, see see Linux manual page for [kill(2)](https://man7.org/linux/man-pages/man2/kill.2.html).
-kill_process: I64 -> String -> IOFail ();
-kill_process = |pid, signal_name| (
+kill_process: [m: MonadIOFail] I64 -> String -> m ();
+kill_process = |pid, signal_name| lift_iofail $ do {
     from_io_result $
     signal_name.borrow_c_str_io(|p_signal_name|
         let res = *FFI_CALL_IO[CInt minilib_io_signal_kill_process(CInt, Ptr),
@@ -82,4 +83,4 @@ kill_process = |pid, signal_name| (
         };
         pure $ ok $ ()
     )
-);
+};

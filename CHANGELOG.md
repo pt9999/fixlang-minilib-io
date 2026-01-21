@@ -1,3 +1,7 @@
+## 0.7.0
+### Changed
+- Functions that return IO/IOFail monads now use MonadIO/MonadIOFail.
+
 ## 0.6.12
 ### Changed
 - fixproj.toml: change versions of dependencies to "*"

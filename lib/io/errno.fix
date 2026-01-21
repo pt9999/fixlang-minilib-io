@@ -1,21 +1,23 @@
 // Functions for `errno` which is set by system calls and some library functions.
 module Minilib.IO.Errno;
 
+import Minilib.Monad.IO;
+
 // Gets the error message corresponding to the last error number.
-get_last_error: IO String;
-get_last_error = (
+get_last_error: [m: MonadIO] m String;
+get_last_error = lift_io $ do {
     let errno = *get_errno;
     strerror(errno)
-);
+};
 
 // Converts the error number returned by `get_errno` to a string.
 // This function may have race conditions, but is more portable.
-strerror: I32 -> IO String;
-strerror = |errno| (
+strerror: [m: MonadIO] I32 -> m String;
+strerror = |errno| lift_io $ do {
     let p_errmsg = *FFI_CALL_IO[Ptr strerror(I32), errno];
     pure $ p_errmsg.unsafe_from_c_str_ptr
-);
+};
 
 // Deprecated: Now this function is identical to `strerror`.
-strerror_r: I32 -> IO String;
+strerror_r: [m: MonadIO] I32 -> m String;
 strerror_r = strerror;
