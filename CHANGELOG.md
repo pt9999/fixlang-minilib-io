@@ -1,4 +1,6 @@
 ## 0.7.0
+### Added
+- Minilib.IO.FileSystem: Added `open_temp_file`, `with_temp_file`, `set_file_position`, `get_file_position`.
 ### Changed
 - Functions that return IO/IOFail monads now use MonadIO/MonadIOFail.
 - Improved error messages when an operation fails.

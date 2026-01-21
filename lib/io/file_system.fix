@@ -9,6 +9,7 @@ import Minilib.IO.Errno;
 import Minilib.IO.Platform;
 import Minilib.IO.Path;
 import Minilib.Monad.IO;
+import Minilib.Monad.Error;
 import Minilib.Text.StringEx;
 
 //--------------------------------------------------------------------------
@@ -482,4 +483,125 @@ open_pipe = lift_iofail $ do {
     let read_fh = *fdopen(read_fd, "r");
     let write_fh = *fdopen(write_fd, "w");
     pure $ (read_fh, write_fh)
+};
+
+// Creates and opens a unique temporary file.
+//
+// Returns the file path and file handle of the created temporary file.
+//
+// The temporary file is opened in read/write mode.
+//
+// If `auto_unlink` is true, the temporary file is unlinked from the filesystem as soon as it is created and opened.
+// If `auto_unlink` is false, the temporary file remains on the filesystem.
+//
+// The caller is responsible for performing any cleanup such as closing the file handle and deleting the temporary file.
+//
+// # Parameters
+// - `filepath_prefix`: The file path prefix for the temporary file being created.
+// - `auto_unlink`: If true, the temporary file will be unlinked from the file system as soon as it is created and opened.
+open_temp_file: [m: MonadIOFail] String -> Bool -> m (String, IOHandle);
+open_temp_file = |filepath_prefix, auto_unlink| lift_iofail $ do {
+    let (filepath, fd) = *_open_temp_file(filepath_prefix);
+    when(auto_unlink, unlink(filepath));;
+    let handle = *fdopen(fd, "w+");
+    pure $ (filepath, handle)
+};
+
+_open_temp_file: [m: MonadIOFail] String -> m (String, CInt);
+_open_temp_file = |filepath_prefix| lift_iofail $ do {
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    let template_bytes = (filepath_prefix + "XXXXXX").get_bytes;
+    let (filepath_bytes, fd) = *template_bytes.mutate_boxed_io(|p_template|
+        FFI_CALL_IO[CInt mkstemp(Ptr), p_template]
+    ).lift;
+    if fd == -1.to_CInt {
+        throw("mkstemp(\"" + filepath_prefix + "\") failed!: " + *get_last_error.lift)
+    };
+    let filepath = filepath_bytes.from_bytes.as_ok;
+    pure $ (filepath, fd)
+};
+
+// Creates and opens a unique temporary file, performs `body`, then finally 
+// performs a cleanup.
+//
+// The `body` is a function that takes a file path and a file handle as arguments and returns an IOFail monad.
+// 
+// The temporary file is opened in read/write mode. 
+// 
+// If `auto_unlink` is true, the temporary file is unlinked from the filesystem as soon as it is created and opened.
+// If `auto_unlink` is false, the temporary file remains on the filesystem until the cleanup will be performed.
+//
+// On cleanup, the file handle will be closed, and the temporary file is unlinked if exists.
+// 
+// # Parameters
+// - `filepath_prefix`: The file path prefix for the temporary file being created.
+// - `auto_unlink`: If true, the temporary file will be unlinked from the file system as soon as it is created and opened.
+// - `body`: A function that takes a file path and a file handle as arguments and returns an IOFail monad.
+with_temp_file: [m: MonadIOFail] String -> Bool -> ((String, IOHandle) -> IOFail a) -> m a;
+with_temp_file = |filepath_prefix, auto_unlink, body| lift_iofail $ do {
+    let (filepath, handle) = *open_temp_file(filepath_prefix, auto_unlink);
+    do {
+        body((filepath, handle))
+    }
+    .finally(
+        close_file(handle).lift;;
+        unlink(filepath).when(*file_exists(filepath))
+    )
+};
+
+// The type of file seek reference position
+type SeekWhence = unbox union {
+    // The start of the file
+    seek_set: (),
+    // The current position
+    seek_cur: (),
+    // The end of the file
+    seek_end: ()
+};
+
+// Sets the file position of a file handle.
+//
+// # Parameters
+// - `handle`: A file handle
+// - `offset`: An offset relative to the reference position specified by `whence`
+// - `whence`: The reference position
+set_file_position: [m: MonadIOFail] IOHandle -> CLong -> SeekWhence -> m ();
+set_file_position = |handle, offset, whence| lift_iofail $ do {
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    let whence = match whence {
+        seek_set() => 0,
+        seek_cur() => 1,
+        seek_end() => 2,
+    };
+    let whence = FFI_CALL[CInt minilib_iofs_convert_seek_whence(CInt), whence.to_CInt];
+    let file_ptr = *handle.get_file_ptr.lift;
+    if file_ptr == nullptr {
+        throw("seek_file_position failed!: the IOHandle is already closed.")
+    };
+    let res = *FFI_CALL_IO[CInt fseek(Ptr, CLong, CInt), file_ptr, offset, whence].lift;
+    if res == -1.to_CInt {
+        throw("fseek(" + file_ptr.to_string + "," + offset.to_string + "," + whence.to_string + ") failed!: " + *get_last_error.lift)
+    };
+    pure()
+};
+
+// Gets the file position of a file handle relative to the start of the file.
+//
+// # Parameters
+// - `handle`: A file handle
+get_file_position: [m: MonadIOFail] IOHandle -> m CLong;
+get_file_position = |handle| lift_iofail $ do {
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    let file_ptr = *handle.get_file_ptr.lift;
+    if file_ptr == nullptr {
+        throw("get_file_position failed!: the IOHandle is already closed.")
+    };
+    let offset = *FFI_CALL_IO[CLong ftell(Ptr), file_ptr].lift;
+    if offset == -1.to_CLong {
+        throw("ftell(" + file_ptr.to_string + ") failed!: " + *get_last_error.lift)
+    };
+    pure $ offset
 };

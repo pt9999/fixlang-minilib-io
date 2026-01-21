@@ -5,6 +5,7 @@ import AsyncTask;
 import Minilib.Common.IOEx;
 import Minilib.Common.TimeEx;
 import Minilib.IO.FileSystem;
+import Minilib.Monad.Error;
 import Minilib.Text.StringEx;
 import Minilib.Testing.UnitTest;
 import Minilib.Trait.Traversable;
@@ -272,6 +273,99 @@ test_pipe = (
     pure()
 );
 
+test_open_temp_file: TestCase;
+test_open_temp_file = (
+    make_table_test("test_open_temp_file",
+        do {
+            let prefix = *["temp123", "nosuchdir/temp123", "/tmp/temp123"];
+            let auto_unlink = *[true, false];
+            let expected = if prefix.starts_with("nosuchdir/") { err("err") } else { ok() };
+            pure $ (prefix, auto_unlink, expected)
+        },
+        |(prefix, auto_unlink, expected)|
+        let res = *open_temp_file(prefix, auto_unlink).to_result.lift;
+        if expected.is_err {
+            assert_true("open_temp_file should fail", res.is_err);;
+            assert_true("errmsg contains \"mkstemp\"", res.as_err.find("mkstemp",0).is_some)
+        };
+        let (filepath, handle) = res.as_ok;
+        do {
+            assert_true("filepath starts with prefix", filepath.starts_with(prefix));;
+            assert_equal("filepath.@size = prefix.@size + 6", filepath.@size, prefix.@size + 6);;
+            if auto_unlink {
+                assert_true("filepath not exists", ! *file_exists(filepath))
+            } else {
+                assert_true("filepath exists", *file_exists(filepath))
+            };;
+            pure()
+        }
+        .finally(
+            close_file(handle).lift;;
+            unlink(filepath).unless(auto_unlink)
+        )
+    )
+);
+
+test_with_temp_file: TestCase;
+test_with_temp_file = (
+    make_table_test("test_with_temp_file",
+        do {
+            let prefix = *["temp123", "nosuchdir/temp123", "/tmp/temp123"];
+            let auto_unlink = *[true, false];
+            let expected = if prefix.starts_with("nosuchdir/") { err("err") } else { ok() };
+            pure $ (prefix, auto_unlink, expected)
+        },
+        |(prefix, auto_unlink, expected)| 
+        let body = |(filepath, handle)| (
+            assert_true("filepath starts with prefix", filepath.starts_with(prefix));;
+            assert_equal("filepath.@size = prefix.@size + 6", filepath.@size, prefix.@size + 6);;
+            if auto_unlink {
+                assert_true("filepath not exists", ! *file_exists(filepath))
+            } else {
+                assert_true("filepath exists", *file_exists(filepath))
+            };;
+            // returns filepath and handle for checking whether the cleanup is performed correctly
+            pure $ (filepath, handle)
+        );
+        let res = *with_temp_file(prefix, auto_unlink, body).to_result.lift;
+        if expected.is_err {
+            assert_true("open_temp_file should fail", res.is_err);;
+            assert_true("errmsg contains \"mkstemp\"", res.as_err.find("mkstemp",0).is_some)
+        };
+        // check cleanup
+        let (filepath, handle) = *res.from_result;
+        assert_true("filepath not exists after cleanup", ! *file_exists(filepath));;
+        assert_equal("filehandle is closed after cleanup", nullptr, *handle.get_file_ptr.lift)
+    )
+);
+
+test_seek_tell_file: TestCase;
+test_seek_tell_file = (
+    make_test("test_seek_tell_file") $ |_|
+    with_temp_file("test_seek_tell_file", true) $ |(filepath, handle)|
+    let offset = *get_file_position(handle);
+    assert_equal("start", 0.to_CLong, offset);;
+    write_string(handle, "abcdef\n");;
+    flush(handle).lift;;
+    let offset = *get_file_position(handle);
+    assert_equal("after writing a line", 7.to_CLong, offset);;
+    set_file_position(handle, -2.to_CLong, seek_cur());;
+    set_file_position(handle, -3.to_CLong, seek_cur());;
+    let offset = *get_file_position(handle);
+    assert_equal("after seek with seek_cur", 2.to_CLong, offset);;
+    set_file_position(handle, -1.to_CLong, seek_end());;
+    let offset = *get_file_position(handle);
+    assert_equal("after seek with seek_end", 6.to_CLong, offset);;
+    set_file_position(handle, 1.to_CLong, seek_set());;
+    let offset = *get_file_position(handle);
+    assert_equal("after seek with seek_set", 1.to_CLong, offset);;
+    let line = *read_line(handle);
+    assert_equal("line", "bcdef\n", line);;
+    let offset = *get_file_position(handle);
+    assert_equal("after read line", 7.to_CLong, offset);;
+    pure()
+);
+
 main: IO ();
 main = (
     [
@@ -287,6 +381,9 @@ main = (
         test_mkdir_rmdir,
         test_getcwd_chdir,
         test_pipe,
+        test_open_temp_file,
+        test_with_temp_file,
+        test_seek_tell_file,
         TestCase::empty
     ]
     .run_test_driver

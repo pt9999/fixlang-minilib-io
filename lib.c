@@ -75,6 +75,15 @@ size_t minilib_iofs_readdir(void* dir_handle, uint8_t *buf, size_t bufsize)
     return len;
 }
 
+// Convert `whence` for portability
+int minilib_iofs_convert_seek_whence(int whence)
+{
+    if (whence == 0) return SEEK_SET;
+    if (whence == 1) return SEEK_CUR;
+    if (whence == 2) return SEEK_END;
+    return -1;
+}
+
 static char* _copy_str(char** p_buf, size_t* p_bufsize, char* src)
 {
     size_t copy_size = strlen(src) + 1;
