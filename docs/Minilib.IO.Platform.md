@@ -1,6 +1,6 @@
 # Minilib.IO.Platform
 
-Defined in minilib-io@0.6.12
+Defined in minilib-io@0.7.0
 
 Get kernel information such as system name, machine archtecture.
 
@@ -16,7 +16,7 @@ The byte order of platform.
 
 #### get_uname
 
-Type: `Std::IO::IOFail Minilib.IO.Platform::UName`
+Type: `[m : Minilib.Monad.IO::MonadIOFail] m Minilib.IO.Platform::UName`
 
 Gets the name and information of current kernel.
 It calls POSIX C function `uname()`.

@@ -1,6 +1,6 @@
 # Minilib.IO.Errno
 
-Defined in minilib-io@0.6.12
+Defined in minilib-io@0.7.0
 
 Functions for `errno` which is set by system calls and some library functions.
 
@@ -10,20 +10,20 @@ Functions for `errno` which is set by system calls and some library functions.
 
 #### get_last_error
 
-Type: `Std::IO Std::String`
+Type: `[m : Minilib.Monad.IO::MonadIO] m Std::String`
 
 Gets the error message corresponding to the last error number.
 
 #### strerror
 
-Type: `Std::I32 -> Std::IO Std::String`
+Type: `[m : Minilib.Monad.IO::MonadIO] Std::I32 -> m Std::String`
 
 Converts the error number returned by `get_errno` to a string.
 This function may have race conditions, but is more portable.
 
 #### strerror_r
 
-Type: `Std::I32 -> Std::IO Std::String`
+Type: `[m : Minilib.Monad.IO::MonadIO] Std::I32 -> m Std::String`
 
 Deprecated: Now this function is identical to `strerror`.
 

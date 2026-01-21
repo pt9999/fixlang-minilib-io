@@ -1,6 +1,6 @@
 # Minilib.IO.Signal
 
-Defined in minilib-io@0.6.12
+Defined in minilib-io@0.7.0
 
 Unix signal handling
 
@@ -10,7 +10,7 @@ Unix signal handling
 
 #### kill_process
 
-Type: `Std::I64 -> Std::String -> Std::IO::IOFail ()`
+Type: `[m : Minilib.Monad.IO::MonadIOFail] Std::I64 -> Std::String -> m ()`
 
 `kill_process(pid, signal_name)` sends a signal to the process specified by `pid`.
 `signal_name` should be one of `signal_names`.
@@ -19,7 +19,7 @@ For details, see see Linux manual page for [kill(2)](https://man7.org/linux/man-
 
 #### set_signal_handler
 
-Type: `Std::String -> Std::String -> Std::IO::IOFail ()`
+Type: `[m : Minilib.Monad.IO::MonadIOFail] Std::String -> Std::String -> m ()`
 
 `set_signal_handler(signal_name, sighandle_name)` sets the handler for the signal.
 `signal_name` should be one of `signal_names`.
