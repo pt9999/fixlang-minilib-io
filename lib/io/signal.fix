@@ -53,18 +53,15 @@ sighandler_names = [
 // `sighandle_name` should be one of `sighandler_names`.
 set_signal_handler: [m: MonadIOFail] String -> String -> m ();
 set_signal_handler = |signal_name, sighandler_name| lift_iofail $ do {
-    from_io_result $
-    signal_name.borrow_c_str_io(|p_signal_name|
+    let res = *signal_name.borrow_c_str_io(|p_signal_name|
         sighandler_name.borrow_c_str_io(|p_sighandler_name|
-            let res = *FFI_CALL_IO[CInt minilib_io_signal_set_signal_handler(Ptr, Ptr),
-                p_signal_name,
-                p_sighandler_name];
-            if res.to_I64 != 0 {
-                pure $ err $ "set_signal_handler failed!: " + *get_last_error
-            };
-            pure $ ok $ ()
+            FFI_CALL_IO[CInt minilib_io_signal_set_signal_handler(Ptr, Ptr), p_signal_name, p_sighandler_name]
         )
-    )
+    ).lift;
+    if res.to_I64 != 0 {
+        throw $ "set_signal_handler(\"" + signal_name + "\",\"" + sighandler_name + "\") failed!: " + *get_last_error
+    };
+    pure()
 };
 
 // `kill_process(pid, signal_name)` sends a signal to the process specified by `pid`.
@@ -73,14 +70,11 @@ set_signal_handler = |signal_name, sighandler_name| lift_iofail $ do {
 // For details, see see Linux manual page for [kill(2)](https://man7.org/linux/man-pages/man2/kill.2.html).
 kill_process: [m: MonadIOFail] I64 -> String -> m ();
 kill_process = |pid, signal_name| lift_iofail $ do {
-    from_io_result $
-    signal_name.borrow_c_str_io(|p_signal_name|
-        let res = *FFI_CALL_IO[CInt minilib_io_signal_kill_process(CInt, Ptr),
-            pid.to_CInt,
-            p_signal_name];
-        if res.to_I64 != 0 {
-            pure $ err $ "kill_process failed!: " + *get_last_error
-        };
-        pure $ ok $ ()
-    )
+    let res = *signal_name.borrow_c_str_io(|p_signal_name|
+        FFI_CALL_IO[CInt minilib_io_signal_kill_process(CInt, Ptr), pid.to_CInt, p_signal_name]
+    ).lift;
+    if res.to_I64 != 0 {
+        throw $ "kill_process(" + pid.to_string + ") failed!: " + *get_last_error
+    };
+    pure()
 };

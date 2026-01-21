@@ -1,6 +1,7 @@
 ## 0.7.0
 ### Changed
 - Functions that return IO/IOFail monads now use MonadIO/MonadIOFail.
+- Improved error messages when an operation fails.
 
 ## 0.6.12
 ### Changed

@@ -70,7 +70,7 @@ namespace FileStat {
             )
         ).lift;
         if res != 0.to_CInt {
-            throw("stat failed!: " + *get_last_error.lift)
+            throw("stat(\"" + file_path + "\") failed!: " + *get_last_error.lift)
         };
         pure $ FileStat { data: data }
     };
@@ -228,8 +228,7 @@ _opendir = |dir_path| lift_iofail $ do {
         FFI_CALL_IO[Ptr opendir(Ptr), p_path]
     ).lift;
     if dirp == nullptr {
-        throw("opendir failed!: " + *get_last_error.lift
-                + "\ndir_path=" + dir_path)
+        throw("opendir(\"" + dir_path + "\") failed!: " + *get_last_error.lift)
     };
     pure $ DirHandle {
         dtor: *Destructor::make(dirp, |dirp|
@@ -312,7 +311,7 @@ mkdir = |path, mode| lift_iofail $ do {
         FFI_CALL_IO[CInt mkdir(Ptr, U32), p_path, mode]
     ).lift;
     if res != 0.to_CInt {
-        throw("mkdir failed!: " + *get_last_error.lift)
+        throw("mkdir(\"" + path + "\"," + mode.to_string + ") failed!: " + *get_last_error.lift)
     };
     pure()
 };
@@ -329,7 +328,7 @@ rmdir = |path| lift_iofail $ do {
         FFI_CALL_IO[CInt rmdir(Ptr), p_path]
     ).lift;
     if res != 0.to_CInt {
-        throw("rmdir failed!: " + *get_last_error.lift)
+        throw("rmdir(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
 };
@@ -362,7 +361,7 @@ chdir = |path| lift_iofail $ do {
         FFI_CALL_IO[CInt chdir(Ptr), p_path]
     ).lift;
     if res != 0.to_CInt {
-        throw("chdir failed!: " + *get_last_error.lift)
+        throw("chdir(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
 };
@@ -384,7 +383,7 @@ realpath = |path| lift_iofail $ do {
         FFI_CALL_IO[Ptr realpath(Ptr, Ptr), p_path, nullptr]
     ).lift;
     if p_resolved == nullptr {
-        throw("realpath failed!: " + *get_last_error.lift + ": path=" + path)
+        throw("realpath(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     let resolved: String = String::unsafe_from_c_str_ptr(p_resolved);
     eval resolved;      // ensure `String::unsafe_from_c_str_ptr` is called before calling `free()`
@@ -407,7 +406,7 @@ creat = |path, mode| lift_iofail $ do {
         FFI_CALL_IO[CInt creat(Ptr, U32), p_path, mode]
     ).lift;
     if fd == -1.to_CInt {
-        throw("creat failed!: " + *get_last_error.lift)
+        throw("creat(\"" + path + "\"," + mode.to_string + ") failed!: " + *get_last_error.lift)
     };
     pure $ fd
 };
@@ -426,7 +425,7 @@ unlink = |path| lift_iofail $ do {
         FFI_CALL_IO[CInt unlink(Ptr), p_path]
     ).lift;
     if res == -1.to_CInt {
-        throw("unlink failed!: " + *get_last_error.lift)
+        throw("unlink(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
 };
@@ -446,7 +445,7 @@ fdopen = |fd, mode| lift_iofail $ do {
         FFI_CALL_IO[Ptr fdopen(CInt, Ptr), fd, p_mode]
     ).lift;
     if file_ptr == nullptr {
-        throw("fdopen failed!: " + *get_last_error.lift)
+        throw("fdopen(" + fd.to_string + ") failed!: " + *get_last_error.lift)
     };
     IOHandle::from_file_ptr(file_ptr).lift
 };
