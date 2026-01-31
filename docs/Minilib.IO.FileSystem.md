@@ -1,6 +1,6 @@
 # Minilib.IO.FileSystem
 
-Defined in minilib-io@0.7.0
+Defined in minilib-io@0.7.1
 
 File system module. For example, finding files, checks if file or directory exists,
 getting file size and last modified time.
@@ -38,6 +38,8 @@ Type: `[m : Minilib.Monad.IO::MonadIO] Std::String -> m Std::Bool`
 
 Returns true if the specified directory exists.
 
+NOTE: If `file_path` is a broken symbolic link, it returns false.
+
 ##### Parameters
 
 - `dir_path`: a directory path
@@ -60,6 +62,8 @@ For details, see Linux manual page for [fdopen(3p)](https://man7.org/linux/man-p
 Type: `[m : Minilib.Monad.IO::MonadIO] Std::String -> m Std::Bool`
 
 Returns true if the specified file exists.
+
+NOTE: If `file_path` is a broken symbolic link, it returns false.
 
 ##### Parameters
 
@@ -210,6 +214,19 @@ Sets the file position of a file handle.
 - `offset`: An offset relative to the reference position specified by `whence`
 - `whence`: The reference position
 
+#### symlink
+
+Type: `[m : Minilib.Monad.IO::MonadIOFail] Std::String -> Std::String -> m ()`
+
+Creates a symbolic link.
+
+For details, see Linux manual page for [symlink(2)](https://man7.org/linux/man-pages/man2/symlink.2.html).
+
+##### Parameters
+
+- `target`: a file path the symolic link refers to
+- `link_path`: a path of the symbolic link
+
 #### unlink
 
 Type: `[m : Minilib.Monad.IO::MonadIOFail] Std::String -> m ()`
@@ -221,6 +238,20 @@ For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pa
 ##### Parameters
 
 - `path`: a file path to be deleted
+
+#### unlink_if_exists
+
+Type: `[m : Minilib.Monad.IO::MonadIOFail] Std::String -> m ()`
+
+Deletes a name from the filesystem only if the name exists, and possibly the file it refers to.
+
+If the name points to a symbolic link, it deletes that symbolic link.
+
+For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html).
+
+##### Parameters
+
+- `path`: a path to be deleted
 
 #### with_temp_file
 
@@ -265,6 +296,31 @@ Returns true if it is a regular file.
 ##### Parameters
 
 - `file_stat`: a file status obtained by `stat`
+
+#### is_symbolic_link
+
+Type: `Minilib.IO.FileSystem::FileStat -> Std::Bool`
+
+Returns true if it is a symbolic link.
+
+##### Parameters
+
+- `file_stat`: a file status obtained by `lstat`
+
+#### lstat
+
+Type: `[m : Minilib.Monad.IO::MonadIOFail] Std::String -> m Minilib.IO.FileSystem::FileStat`
+
+`lstat(file_path)` retrieves information about the file pointed to by `file_path`.
+If `file_path` is a symbolic link, it retrieves information about the symbolic link itself,
+not the file it references.
+
+For detials, see Linux manual page for [lstat(2)](https://man7.org/linux/man-pages/man2/lstat.2.html)
+and [stat(3type)](https://man7.org/linux/man-pages/man3/stat.3type.html).
+
+##### Parameters
+
+- `file_path`: a file path
 
 #### st_atim
 
