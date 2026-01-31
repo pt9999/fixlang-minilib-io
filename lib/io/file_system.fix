@@ -18,6 +18,8 @@ import Minilib.Text.StringEx;
 
 // Returns true if the specified file exists.
 //
+// NOTE: If `file_path` is a broken symbolic link, it returns false.
+//
 // # Parameters
 // - `file_path`: a file path
 file_exists: [m: MonadIO] String -> m Bool;
@@ -33,6 +35,8 @@ file_exists = |file_path| lift_io $ do {
 
 // Returns true if the specified directory exists.
 //
+// NOTE: If `file_path` is a broken symbolic link, it returns false.
+//
 // # Parameters
 // - `dir_path`: a directory path
 directory_exists: [m: MonadIO] String -> m Bool;
@@ -45,7 +49,6 @@ directory_exists = |dir_path| lift_io $ do {
     let file_stat = res.as_ok;
     pure $ file_stat.is_dir
 };
-
 
 // Type of file status
 type FileStat = unbox struct {
@@ -61,17 +64,36 @@ namespace FileStat {
     // # Parameters
     // - `file_path`: a file path
     stat: [m: MonadIOFail] String -> m FileStat;
-    stat = |file_path| lift_iofail $ do {
+    stat = |file_path| _stat_or_lstat(file_path, true);
+
+    // `lstat(file_path)` retrieves information about the file pointed to by `file_path`.
+    // If `file_path` is a symbolic link, it retrieves information about the symbolic link itself, 
+    // not the file it references.
+    //
+    // For detials, see Linux manual page for [lstat(2)](https://man7.org/linux/man-pages/man2/lstat.2.html)
+    // and [stat(3type)](https://man7.org/linux/man-pages/man3/stat.3type.html).
+    //
+    // # Parameters
+    // - `file_path`: a file path
+    lstat: [m: MonadIOFail] String -> m FileStat;
+    lstat = |file_path| _stat_or_lstat(file_path, false);
+
+    // internal function of `stat` and `lstat`
+    _stat_or_lstat: [m: MonadIOFail] String -> Bool -> m FileStat;
+    _stat_or_lstat = |file_path, is_stat| lift_iofail $ do {
         pure();; // make it lazy
         clear_errno.lift;;
         let data = Array::fill(16, 0_U64);
         let (data, res) = *data.mutate_boxed_io(|p_data|
             file_path.borrow_c_str_io(|p_filepath|
-                FFI_CALL_IO[CInt minilib_iofs_stat(Ptr, Ptr), p_filepath, p_data]
+                FFI_CALL_IO[CInt minilib_iofs_stat_or_lstat(Ptr, Ptr, CInt), p_filepath, p_data, 
+                    if is_stat { 1.to_CInt } else { 0.to_CInt }
+                ]
             )
         ).lift;
         if res != 0.to_CInt {
-            throw("stat(\"" + file_path + "\") failed!: " + *get_last_error.lift)
+            let func_name = if is_stat { "stat" } else { "lstat" };
+            throw(func_name + "(\"" + file_path + "\") failed!: " + *get_last_error.lift)
         };
         pure $ FileStat { data: data }
     };
@@ -83,6 +105,16 @@ namespace FileStat {
     is_file: FileStat -> Bool;
     is_file = |file_stat| (
         FFI_CALL[CInt minilib_iofs_stat_mode_is_file(U32), file_stat.st_mode]
+        != 0.to_CInt
+    );
+
+    // Returns true if it is a symbolic link.
+    //
+    // # Parameters
+    // - `file_stat`: a file status obtained by `lstat`
+    is_symbolic_link: FileStat -> Bool;
+    is_symbolic_link = |file_stat| (
+        FFI_CALL[CInt minilib_iofs_stat_mode_is_symbolic_link(U32), file_stat.st_mode]
         != 0.to_CInt
     );
 
@@ -412,6 +444,28 @@ creat = |path, mode| lift_iofail $ do {
     pure $ fd
 };
 
+// Creates a symbolic link.
+//
+// For details, see Linux manual page for [symlink(2)](https://man7.org/linux/man-pages/man2/symlink.2.html).
+//
+// # Parameters
+// - `target`: a file path the symolic link refers to
+// - `link_path`: a path of the symbolic link
+symlink: [m: MonadIOFail] String -> String -> m ();
+symlink = |target, link_path| lift_iofail $ do {
+    pure();;    // make it lazy
+    clear_errno.lift;;
+    let res = *target.borrow_c_str_io(|p_target|
+        link_path.borrow_c_str_io(|p_link_path|
+            FFI_CALL_IO[CInt symlink(Ptr, Ptr), p_target, p_link_path]
+        )
+    ).lift;
+    if res == -1.to_CInt {
+        throw("symlink(\"" + target + "\",\"" + link_path + "\") failed!: " + *get_last_error.lift)
+    };
+    pure()
+};
+
 // Deletes a name from the filesystem and possibly the file it refers to.
 //
 // For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html).
@@ -429,6 +483,20 @@ unlink = |path| lift_iofail $ do {
         throw("unlink(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
+};
+
+// Deletes a name from the filesystem only if the name exists, and possibly the file it refers to.
+//
+// If the name points to a symbolic link, it deletes that symbolic link.
+//
+// For details, see Linux manual page for [unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html).
+//
+// # Parameters
+// - `path`: a path to be deleted
+unlink_if_exists: [m: MonadIOFail] String -> m ();
+unlink_if_exists = |path| lift_iofail $ do {
+    let res = *lstat(path).to_result_t;
+    when(res.is_ok, unlink(path))
 };
 
 // Associates a stream with a file descriptor.

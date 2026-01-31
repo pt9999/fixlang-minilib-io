@@ -10,10 +10,15 @@
 #include <stdio.h>
 #include <errno.h>
 
-int minilib_iofs_stat(const char* pathname, uint64_t *ret)
+int minilib_iofs_stat_or_lstat(const char* pathname, uint64_t *ret, int is_stat)
 {
     struct stat st;
-    int err = stat(pathname, &st);
+    int err;
+    if (is_stat) {
+        err = stat(pathname, &st);
+    } else {
+        err = lstat(pathname, &st);
+    }
     if (err != 0) {
         return err;
     }
@@ -53,6 +58,11 @@ int minilib_iofs_stat_mode_is_file(uint32_t mode)
 int minilib_iofs_stat_mode_is_dir(uint32_t mode)
 {
     return S_ISDIR(mode) ? 1 : 0;
+}
+
+int minilib_iofs_stat_mode_is_symbolic_link(uint32_t mode)
+{
+    return S_ISLNK(mode) ? 1 : 0;
 }
 
 size_t minilib_iofs_readdir(void* dir_handle, uint8_t *buf, size_t bufsize)

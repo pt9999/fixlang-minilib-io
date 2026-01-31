@@ -251,6 +251,74 @@ test_creat_unlink = (
     pure()
 );
 
+test_symlink: TestCase;
+test_symlink = (
+    let testname = "test_symlink";
+    make_test(testname) $ |_|
+    let tmp_file = "tmp.test_symlink.tmp";
+    let tmp_symlink = "tmp.test_symlink.link.tmp";
+    unlink_if_exists(tmp_file);;
+    unlink_if_exists(tmp_symlink);;
+    do {
+        write_file_string(tmp_file, "content");;
+        symlink(tmp_file, tmp_symlink);;
+        let content = *read_file_string(tmp_symlink);
+        assert_equal("content", "content", content);;
+
+        assert_true("file_exists(tmp_symlink)", *file_exists(tmp_symlink));;
+        unlink_if_exists(tmp_file);;
+        assert_false("file_exists(tmp_symlink) after unlinking tmp_file", *file_exists(tmp_symlink));;
+        pure()
+    }
+    .finally(do {
+        unlink_if_exists(tmp_file);;
+        unlink_if_exists(tmp_symlink)
+    })
+);
+
+test_unlink_if_exists: TestCase;
+test_unlink_if_exists = (
+    let testname = "test_unlink_if_exists";
+    make_test(testname) $ |_|
+    let tmp_file = "tmp.test_unlink_if_exists.tmp";
+    let tmp_symlink = "tmp.test_unlink_if_exists.link.tmp";
+    unlink_if_exists(tmp_file);;
+    unlink_if_exists(tmp_symlink);;
+    write_file_string(tmp_file, "content");;
+    symlink(tmp_file, tmp_symlink);;
+    unlink_if_exists(tmp_file);;
+    unlink_if_exists(tmp_symlink);;
+    unlink_if_exists(tmp_file);;
+    unlink_if_exists(tmp_symlink);;
+    assert_false("tmp_file exists", *file_exists(tmp_file));;
+    assert_false("tmp_symlink exists", *file_exists(tmp_symlink));;
+    pure()
+);
+
+test_lstat: TestCase;
+test_lstat = (
+    let testname = "test_lstat";
+    make_test(testname) $ |_|
+    let tmp_file = "tmp.test_lstat.tmp";
+    let tmp_symlink = "tmp.test_lstat.link.tmp";
+    unlink_if_exists(tmp_file);;
+    unlink_if_exists(tmp_symlink);;
+    do {
+        write_file_string(tmp_file, "content");;
+        symlink(tmp_file, tmp_symlink);;
+        let st = *lstat(tmp_symlink);
+        assert_true("is_symbolic_link", st.is_symbolic_link);;
+        unlink_if_exists(tmp_file);;
+        let st = *lstat(tmp_symlink);
+        assert_true("is_symbolic_link 2", st.is_symbolic_link);;
+        pure()
+    }
+    .finally(do {
+        unlink_if_exists(tmp_file);;
+        unlink_if_exists(tmp_symlink)
+    })
+);
+
 test_pipe: TestCase;
 test_pipe = (
     let testname = "test_pipe";
@@ -378,6 +446,9 @@ main = (
         test_make_dirs_rmdir,
         test_realpath,
         test_creat_unlink,
+        test_symlink,
+        test_unlink_if_exists,
+        test_lstat,
         test_mkdir_rmdir,
         test_getcwd_chdir,
         test_pipe,

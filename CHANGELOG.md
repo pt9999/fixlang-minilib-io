@@ -1,3 +1,9 @@
+## 0.7.1
+### Added
+- Minilib.IO.FileSystem: Added `lstat`, `is_symbolic_link`, `symlink`, `unlink_if_exists`.
+### Changed
+- Minilib.IO.FileSystem: Added a note about broken symlinks to the documentation for `file_exists`, `directory_exists`.
+
 ## 0.7.0
 ### Added
 - Minilib.IO.FileSystem: Added `open_temp_file`, `with_temp_file`, `set_file_position`, `get_file_position`.
