@@ -1,3 +1,7 @@
+## 0.8.0
+### Changed
+- fixproj.toml: Bumped `fix_version` to 1.3.0. Depends on minilib-common@0.12.0, minilib-binary@0.6.0. Moved hashmap and asynctask to test_dependencies.
+
 ## 0.7.1
 ### Added
 - Minilib.IO.FileSystem: Added `lstat`, `is_symbolic_link`, `symlink`, `unlink_if_exists`.
