@@ -2,8 +2,8 @@
 module Minilib.IO.Platform;
 
 import Minilib.Common.Common;
-import Minilib.IO.Errno;
 import Minilib.Encoding.Binary;
+import Minilib.IO.Errno;
 import Minilib.Monad.IO;
 import Minilib.Text.StringEx;
 

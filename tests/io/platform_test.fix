@@ -1,9 +1,9 @@
 module PlatformTest;
 
-import Minilib.Encoding.Binary;
-import Minilib.IO.Platform;
-import Minilib.Text.StringEx;
-import Minilib.Testing.UnitTest;
+import Minilib.Encoding.Binary::ByteOrder::is_little_endian;
+import Minilib.IO.Platform::{byte_order, get_uname, UName::{@machine, @nodename, @release, @sysname, @version}};
+import Minilib.Testing.UnitTest::{assert_true, make_test, run_test_driver, TestCase, TestCase::empty};
+import Std::{IO, IO::{println, IOFail::lift}, Monad::{pure, when}};
 
 test_get_uname: TestCase;
 test_get_uname = (

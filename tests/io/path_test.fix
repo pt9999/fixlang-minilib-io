@@ -1,8 +1,5 @@
 module PathTest;
 
-import Character;
-import HashMap;
-
 import Minilib.IO.Path;
 import Minilib.Text.StringEx;
 import Minilib.Testing.UnitTest;
