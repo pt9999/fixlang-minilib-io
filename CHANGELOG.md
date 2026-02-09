@@ -1,6 +1,10 @@
 ## 0.8.0
 ### Changed
-- fixproj.toml: Bumped `fix_version` to 1.3.0. Depends on minilib-common@0.12.0, minilib-binary@0.6.0. Moved hashmap and asynctask to test_dependencies.
+- fixproj.toml:
+  - Bumped `fix_version` to 1.3.0.
+  - Depends on minilib-common@0.12.0, minilib-binary@0.6.0.
+  - Moved asynctask to test_dependencies.
+  - Removed hashmap from dependencies.
 
 ## 0.7.1
 ### Added
