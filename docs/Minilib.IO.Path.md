@@ -1,6 +1,6 @@
 # Minilib.IO.Path
 
-Defined in minilib-io@0.7.2
+Defined in minilib-io@0.8.0
 
 File Path handling, such as joining paths and retrieving directory name.
 
