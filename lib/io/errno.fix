@@ -15,7 +15,7 @@ get_last_error = lift_io $ do {
 strerror: [m: MonadIO] I32 -> m String;
 strerror = |errno| lift_io $ do {
     let p_errmsg = *FFI_CALL_IO[Ptr strerror(I32), errno];
-    pure $ p_errmsg.unsafe_from_c_str_ptr
+    p_errmsg.unsafe_from_c_str_ptr_io
 };
 
 // Deprecated: Now this function is identical to `strerror`.

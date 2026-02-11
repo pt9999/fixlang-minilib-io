@@ -78,32 +78,32 @@ uname = (
 // Gets the name and information of current kernel.
 // It calls POSIX C function `uname()`.
 get_uname: [m: MonadIOFail] m UName;
-get_uname = lift_iofail $ do {
+get_uname = lift_iofail $ from_io_result $ do {
     let bufsize = 4096;
     let buf = Array::fill(bufsize, 0_U8);
     let names_size = 5;
     let names = Array::fill(names_size, nullptr);
 
-    from_io_result $
-    buf.flip(borrow_boxed_io) $ |p_buf|
-    let (names, res) = *names.mutate_boxed_io(|p_names|
-        FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
-            p_buf, bufsize.to_CSizeT,
-            p_names, names_size.to_CSizeT
-        ]
-    );
-    if res.to_I64 != 0 {
-        pure $ err $ "uname failed!: " + *get_last_error
-    };
-    let from_c_str = |ptr| if ptr == nullptr { "" } else { String::unsafe_from_c_str_ptr(ptr) };
-    let uname = UName {
-        sysname: from_c_str(names.@(0)),
-        nodename: from_c_str(names.@(1)),
-        release: from_c_str(names.@(2)),
-        version: from_c_str(names.@(3)),
-        machine: from_c_str(names.@(4))
-    };
-    pure $ ok $ uname
+    buf.borrow_boxed_io(|p_buf|
+        let (names, res) = *names.mutate_boxed_io(|p_names|
+            FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
+                p_buf, bufsize.to_CSizeT,
+                p_names, names_size.to_CSizeT
+            ]
+        );
+        if res.to_I64 != 0 {
+            pure $ err $ "uname failed!: " + *get_last_error
+        };
+        let from_c_str = |ptr| if ptr == nullptr { pure $ "" } else { String::unsafe_from_c_str_ptr_io(ptr) };
+        let uname = UName {
+            sysname: *from_c_str(names.@(0)),
+            nodename: *from_c_str(names.@(1)),
+            release: *from_c_str(names.@(2)),
+            version: *from_c_str(names.@(3)),
+            machine: *from_c_str(names.@(4))
+        };
+        pure $ ok $ uname
+    )
 };
 
 // The byte order of platform.
