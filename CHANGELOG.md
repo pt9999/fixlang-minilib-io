@@ -1,3 +1,7 @@
+## 0.8.2
+### Changed
+- Utilized minilib-common@0.12.3.
+
 ## 0.8.1
 ### Fixed
 - Fixed potential dangling pointers. (`unsafe_from_c_str_ptr` -> `unsafe_from_c_str_ptr_io`)

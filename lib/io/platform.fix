@@ -37,7 +37,7 @@ uname = (
         let dump = dump.push_back(encode_hex_char(b.shift_left(4_U8).bit_and(15_U8)))
             .push_back(encode_hex_char(b.bit_and(15_U8)));
         if i % 16 == 15 { dump.push_back('\n') } else { dump }
-    )._unsafe_to_string;
+    ).StringEx::from_array;
     eval debug_println(dump);
     */
     let find_from_start_by = |start, cond, arr| (
@@ -59,7 +59,7 @@ uname = (
             buf.get_size,
             |end| end
         );
-        let name = buf.get_sub(start, end)._unsafe_to_string;
+        let name = buf.get_sub(start, end).StringEx::from_array;
         let names = names.push_back(name);
         continue $ (names, end)
     );

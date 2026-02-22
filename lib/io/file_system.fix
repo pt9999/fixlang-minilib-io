@@ -295,7 +295,7 @@ _readdir = |dir_handle| lift_iofail $ do {
         pure $ ""
     };
     let buf = buf.get_sub(0, len.to_I64);
-    pure $ buf._unsafe_to_string
+    pure $ StringEx::from_array(buf)
 };
 
 //--------------------------------------------------------------------------
