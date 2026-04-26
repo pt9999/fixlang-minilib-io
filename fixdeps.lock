@@ -11,21 +11,21 @@ rev = "fd75a6634ec0c919f2d1703112d25da9a3c2346e"
 
 [[dependencies]]
 name = "minilib-binary"
-version = "0.6.2"
-path = ".fixlang/deps/minilib-binary_0.6.2"
+version = "0.6.3"
+path = ".fixlang/deps/minilib-binary_0.6.3"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "e6e831a77b80506e01338844b4cb0d6c86267226"
+rev = "e396317bce3c7a1006de2386e8cb71fa3665503a"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.13.0"
-path = ".fixlang/deps/minilib-common_0.13.0"
+version = "0.13.1"
+path = ".fixlang/deps/minilib-common_0.13.1"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "d8af3860a44a3ab19ddf6a39c809b959821cbe98"
+rev = "87c043b05ab35881c81a53587cdbc72f0ae0e5cf"
 
 [[dependencies]]
 name = "time"
