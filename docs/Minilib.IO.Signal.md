@@ -1,6 +1,6 @@
 # Minilib.IO.Signal
 
-Defined in minilib-io@0.8.4
+Defined in minilib-io@0.8.5
 
 Unix signal handling
 

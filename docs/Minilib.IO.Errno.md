@@ -1,6 +1,6 @@
 # Minilib.IO.Errno
 
-Defined in minilib-io@0.8.4
+Defined in minilib-io@0.8.5
 
 Functions for `errno` which is set by system calls and some library functions.
 
@@ -23,9 +23,9 @@ This function may have race conditions, but is more portable.
 
 #### strerror_r
 
-Type: `[m : Minilib.Monad.IO::MonadIO] Std::I32 -> m Std::String`
+**Deprecated**: Now this function is identical to `strerror`.
 
-Deprecated: Now this function is identical to `strerror`.
+Type: `[m : Minilib.Monad.IO::MonadIO] Std::I32 -> m Std::String`
 
 ## Types and aliases
 

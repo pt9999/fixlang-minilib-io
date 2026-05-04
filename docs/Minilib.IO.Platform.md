@@ -1,6 +1,6 @@
 # Minilib.IO.Platform
 
-Defined in minilib-io@0.8.4
+Defined in minilib-io@0.8.5
 
 Get kernel information such as system name, machine archtecture.
 
@@ -23,14 +23,9 @@ It calls POSIX C function `uname()`.
 
 #### uname
 
+**Deprecated**: Use `get_uname` instead.
+
 Type: `Minilib.IO.Platform::UName`
-
-NOTE: `uname` is deprecated. Please use `get_uname`.
-
-The name and information of current kernel.
-Calls POSIX C function `uname()`, and split the result by null characters.
-NOTE: The system information does not change during program execution,
-so this variable is constant.
 
 ## Types and aliases
 
