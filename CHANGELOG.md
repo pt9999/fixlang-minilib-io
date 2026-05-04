@@ -1,5 +1,6 @@
 ## 0.8.5
 ### Changed
+- Upgraded to minilib-binary@0.6.4, asynctask@1.1.5.
 - Modified some code to remove the deprecation warnings.
 
 ## 0.8.3
