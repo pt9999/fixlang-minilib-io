@@ -16,12 +16,11 @@ type UName = unbox struct {
     machine: String
 };
 
-// NOTE: `uname` is deprecated. Please use `get_uname`.
-//
 // The name and information of current kernel.
 // Calls POSIX C function `uname()`, and split the result by null characters.
 // NOTE: The system information does not change during program execution,
 // so this variable is constant.
+DEPRECATED[uname, "Use `get_uname` instead."];
 uname: UName;
 uname = (
     let buf = Array::fill(4096, 0_U8);
@@ -41,7 +40,7 @@ uname = (
     eval debug_println(dump);
     */
     let find_from_start_by = |start, cond, arr| (
-        let len = arr.Array::get_size;
+        let len = arr.Array::@size;
         loop(start, |idx| (
             if idx == len { break $ Option::none $ () };
             if cond(arr.@(idx)) { break $ Option::some $ idx };
@@ -56,7 +55,7 @@ uname = (
         };
         let start = start.as_some;
         let end = buf.find_from_start_by(start, |b| b == 0_U8).map_or(
-            buf.get_size,
+            buf.@size,
             |end| end
         );
         let name = buf.get_sub(start, end).StringEx::from_array;
@@ -87,11 +86,11 @@ get_uname = lift_iofail $ from_io_result $ do {
     buf.borrow_boxed_io(|p_buf|
         let (names, res) = *names.mutate_boxed_io(|p_names|
             FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
-                p_buf, bufsize.to_CSizeT,
-                p_names, names_size.to_CSizeT
+                p_buf, bufsize.c_size_t,
+                p_names, names_size.c_size_t
             ]
         );
-        if res.to_I64 != 0 {
+        if res.i64 != 0 {
             pure $ err $ "uname failed!: " + *get_last_error
         };
         let from_c_str = |ptr| if ptr == nullptr { pure $ "" } else { String::unsafe_from_c_str_ptr_io(ptr) };

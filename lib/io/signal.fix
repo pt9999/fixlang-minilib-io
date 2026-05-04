@@ -58,7 +58,7 @@ set_signal_handler = |signal_name, sighandler_name| lift_iofail $ do {
             FFI_CALL_IO[CInt minilib_io_signal_set_signal_handler(Ptr, Ptr), p_signal_name, p_sighandler_name]
         )
     ).lift;
-    if res.to_I64 != 0 {
+    if res.i64 != 0 {
         throw $ "set_signal_handler(\"" + signal_name + "\",\"" + sighandler_name + "\") failed!: " + *get_last_error
     };
     pure()
@@ -71,9 +71,9 @@ set_signal_handler = |signal_name, sighandler_name| lift_iofail $ do {
 kill_process: [m: MonadIOFail] I64 -> String -> m ();
 kill_process = |pid, signal_name| lift_iofail $ do {
     let res = *signal_name.borrow_c_str_io(|p_signal_name|
-        FFI_CALL_IO[CInt minilib_io_signal_kill_process(CInt, Ptr), pid.to_CInt, p_signal_name]
+        FFI_CALL_IO[CInt minilib_io_signal_kill_process(CInt, Ptr), pid.c_int, p_signal_name]
     ).lift;
-    if res.to_I64 != 0 {
+    if res.i64 != 0 {
         throw $ "kill_process(" + pid.to_string + ") failed!: " + *get_last_error
     };
     pure()

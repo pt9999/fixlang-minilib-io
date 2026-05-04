@@ -1,3 +1,7 @@
+## 0.8.5
+### Changed
+- Modified some code to remove the deprecation warnings.
+
 ## 0.8.3
 ### Changed
 - Removed indirect dependencies.

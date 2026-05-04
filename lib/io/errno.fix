@@ -18,6 +18,6 @@ strerror = |errno| lift_io $ do {
     p_errmsg.unsafe_from_c_str_ptr_io
 };
 
-// Deprecated: Now this function is identical to `strerror`.
+DEPRECATED[strerror_r, "Now this function is identical to `strerror`."];
 strerror_r: [m: MonadIO] I32 -> m String;
 strerror_r = strerror;

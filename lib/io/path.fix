@@ -47,7 +47,7 @@ basename = |path| (
     if opt.is_none {
         path
     };
-    let name = path.get_sub(opt.as_some + 1, path.get_size);
+    let name = path.get_sub(opt.as_some + 1, path.@size);
     name
 );
 
@@ -107,13 +107,13 @@ relativize = |target, base| (
     let targets = target.split("/").filter(|s| !s.is_empty).to_array;
     let i = loop(
         0, |i|
-        if i >= bases.get_size { break $ i };
-        if i >= targets.get_size { break $ i };
+        if i >= bases.@size { break $ i };
+        if i >= targets.@size { break $ i };
         if bases.@(i) != targets.@(i) { break $ i };
         continue $ i + 1
     );
-    let output = Array::fill(bases.get_size - i, "..");
-    let output = output.append(targets.get_sub(i, targets.get_size));
+    let output = Array::fill(bases.@size - i, "..");
+    let output = output.append(targets.get_sub(i, targets.@size));
     let output = output.to_iter.join("/");
     ok $ output
 );

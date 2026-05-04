@@ -6,7 +6,7 @@ import Minilib.Testing.UnitTest;
 getpid: IO I64;
 getpid = (
     FFI_CALL_IO[CInt getpid()]
-    .map(to_I64)
+    .map(i64)
 );
 
 test_set_signal_handler_kill_process: TestCase;

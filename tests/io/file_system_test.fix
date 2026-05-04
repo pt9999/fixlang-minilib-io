@@ -326,17 +326,17 @@ test_pipe = (
     let (read_fd, write_fd) = *pipe;
     let n = 16;
     let input = Array::fill(n, 0_U8);
-    let output = Array::from_map(n, |i| i.to_U8);
+    let output = Array::from_map(n, |i| i.u8);
     let wsize = *output.borrow_boxed_io(|p_output|
-        FFI_CALL_IO[CSizeT write(CInt, Ptr, CSizeT), write_fd.to_CInt, p_output, n.to_CSizeT]
+        FFI_CALL_IO[CSizeT write(CInt, Ptr, CSizeT), write_fd.c_int, p_output, n.c_size_t]
     ).lift;
     let (input, rsize) = *input.mutate_boxed_io(|p_input|
-        FFI_CALL_IO[CSizeT read(CInt, Ptr, CSizeT), read_fd.to_CInt, p_input, n.to_CSizeT]
+        FFI_CALL_IO[CSizeT read(CInt, Ptr, CSizeT), read_fd.c_int, p_input, n.c_size_t]
     ).lift;
-    FFI_CALL_IO[() close(CInt), write_fd.to_CInt].lift;;
-    FFI_CALL_IO[() close(CInt), read_fd.to_CInt].lift;;
-    assert_equal("write", n.to_CSizeT, wsize);;
-    assert_equal("read", n.to_CSizeT, rsize);;
+    FFI_CALL_IO[() close(CInt), write_fd.c_int].lift;;
+    FFI_CALL_IO[() close(CInt), read_fd.c_int].lift;;
+    assert_equal("write", n.c_size_t, wsize);;
+    assert_equal("read", n.c_size_t, rsize);;
     assert_equal("input", output, input);;
     pure()
 );
@@ -412,25 +412,25 @@ test_seek_tell_file = (
     make_test("test_seek_tell_file") $ |_|
     with_temp_file("test_seek_tell_file", true) $ |(filepath, handle)|
     let offset = *get_file_position(handle);
-    assert_equal("start", 0.to_CLong, offset);;
+    assert_equal("start", 0.c_long, offset);;
     write_string(handle, "abcdef\n");;
     flush(handle).lift;;
     let offset = *get_file_position(handle);
-    assert_equal("after writing a line", 7.to_CLong, offset);;
-    set_file_position(handle, -2.to_CLong, seek_cur());;
-    set_file_position(handle, -3.to_CLong, seek_cur());;
+    assert_equal("after writing a line", 7.c_long, offset);;
+    set_file_position(handle, -2.c_long, seek_cur());;
+    set_file_position(handle, -3.c_long, seek_cur());;
     let offset = *get_file_position(handle);
-    assert_equal("after seek with seek_cur", 2.to_CLong, offset);;
-    set_file_position(handle, -1.to_CLong, seek_end());;
+    assert_equal("after seek with seek_cur", 2.c_long, offset);;
+    set_file_position(handle, -1.c_long, seek_end());;
     let offset = *get_file_position(handle);
-    assert_equal("after seek with seek_end", 6.to_CLong, offset);;
-    set_file_position(handle, 1.to_CLong, seek_set());;
+    assert_equal("after seek with seek_end", 6.c_long, offset);;
+    set_file_position(handle, 1.c_long, seek_set());;
     let offset = *get_file_position(handle);
-    assert_equal("after seek with seek_set", 1.to_CLong, offset);;
+    assert_equal("after seek with seek_set", 1.c_long, offset);;
     let line = *read_line(handle);
     assert_equal("line", "bcdef\n", line);;
     let offset = *get_file_position(handle);
-    assert_equal("after read line", 7.to_CLong, offset);;
+    assert_equal("after read line", 7.c_long, offset);;
     pure()
 );
 

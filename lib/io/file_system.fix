@@ -85,11 +85,11 @@ namespace FileStat {
         let (data, res) = *data.mutate_boxed_io(|p_data|
             file_path.borrow_c_str_io(|p_filepath|
                 FFI_CALL_IO[CInt minilib_iofs_stat_or_lstat(Ptr, Ptr, CInt), p_filepath, p_data, 
-                    if is_stat { 1.to_CInt } else { 0.to_CInt }
+                    if is_stat { 1.c_int } else { 0.c_int }
                 ]
             )
         ).lift;
-        if res != 0.to_CInt {
+        if res != 0.c_int {
             let func_name = if is_stat { "stat" } else { "lstat" };
             throw(func_name + "(\"" + file_path + "\") failed!: " + *get_last_error.lift)
         };
@@ -103,7 +103,7 @@ namespace FileStat {
     is_file: FileStat -> Bool;
     is_file = |file_stat| (
         FFI_CALL[CInt minilib_iofs_stat_mode_is_file(U32), file_stat.st_mode]
-        != 0.to_CInt
+        != 0.c_int
     );
 
     // Returns true if it is a symbolic link.
@@ -113,7 +113,7 @@ namespace FileStat {
     is_symbolic_link: FileStat -> Bool;
     is_symbolic_link = |file_stat| (
         FFI_CALL[CInt minilib_iofs_stat_mode_is_symbolic_link(U32), file_stat.st_mode]
-        != 0.to_CInt
+        != 0.c_int
     );
 
     // Returns true if it is a directory.
@@ -123,7 +123,7 @@ namespace FileStat {
     is_dir: FileStat -> Bool;
     is_dir = |file_stat| (
         FFI_CALL[CInt minilib_iofs_stat_mode_is_dir(U32), file_stat.st_mode]
-        != 0.to_CInt
+        != 0.c_int
     );
 
     st_dev: FileStat -> U64;
@@ -136,42 +136,42 @@ namespace FileStat {
     st_nlink = |file_stat| file_stat.@data.@(2);
 
     st_mode: FileStat -> U32;
-    st_mode = |file_stat| file_stat.@data.@(3).to_U32;
+    st_mode = |file_stat| file_stat.@data.@(3).u32;
 
     st_uid: FileStat -> U32;
-    st_uid = |file_stat| file_stat.@data.@(4).to_U32;
+    st_uid = |file_stat| file_stat.@data.@(4).u32;
 
     st_gid: FileStat -> U32;
-    st_gid = |file_stat| file_stat.@data.@(5).to_U32;
+    st_gid = |file_stat| file_stat.@data.@(5).u32;
 
     st_rdev: FileStat -> U64;
     st_rdev = |file_stat| file_stat.@data.@(6);
 
     st_size: FileStat -> I64;
-    st_size = |file_stat| file_stat.@data.@(7).to_I64;
+    st_size = |file_stat| file_stat.@data.@(7).i64;
 
     st_blksize: FileStat -> I64;
-    st_blksize = |file_stat| file_stat.@data.@(8).to_I64;
+    st_blksize = |file_stat| file_stat.@data.@(8).i64;
 
     st_blocks: FileStat -> U64;
     st_blocks = |file_stat| file_stat.@data.@(9);
 
     st_atim: FileStat -> Time;
     st_atim = |file_stat| Time {
-        sec: file_stat.@data.@(10).to_I64,
-        nanosec: file_stat.@data.@(11).to_U32,
+        sec: file_stat.@data.@(10).i64,
+        nanosec: file_stat.@data.@(11).u32,
     };
 
     st_mtim: FileStat -> Time;
     st_mtim = |file_stat| Time {
-        sec: file_stat.@data.@(12).to_I64,
-        nanosec: file_stat.@data.@(13).to_U32,
+        sec: file_stat.@data.@(12).i64,
+        nanosec: file_stat.@data.@(13).u32,
     };
 
     st_ctim: FileStat -> Time;
     st_ctim = |file_stat| Time {
-        sec: file_stat.@data.@(14).to_I64,
-        nanosec: file_stat.@data.@(15).to_U32,
+        sec: file_stat.@data.@(14).i64,
+        nanosec: file_stat.@data.@(15).u32,
     };
 
     st_atime: FileStat -> U64;
@@ -266,7 +266,7 @@ _opendir = |dir_path| lift_iofail $ do {
             //eval debug_eprintln ("closing dir handle");
             //eval clear_errno._unsafe_perform;
             let res = *FFI_CALL_IO[CInt closedir(Ptr), dirp];
-            /*eval if res != 0.to_CInt {
+            /*eval if res != 0.c_int {
                 debug_eprintln("closedir failed!: res=" + res.to_string)
             } else {
                 ()
@@ -284,17 +284,17 @@ _readdir = |dir_handle| lift_iofail $ do {
     let buf = Array::fill(bufsize, 0_U8);
     let (buf, len) = *dir_handle.@dtor.borrow_io(|dirp|
         buf.mutate_boxed_io(|p_buf|
-            FFI_CALL_IO[CSizeT minilib_iofs_readdir(Ptr, Ptr, CSizeT), dirp, p_buf, bufsize.to_CSizeT]
+            FFI_CALL_IO[CSizeT minilib_iofs_readdir(Ptr, Ptr, CSizeT), dirp, p_buf, bufsize.c_size_t]
         )
     ).lift;
-    if len.to_I64 == 0 {
+    if len.i64 == 0 {
         let errno = *get_errno.lift;
-        if errno != 0.to_CInt {
+        if errno != 0.c_int {
             throw("readdir failed!: " + *get_last_error.lift)
         };
         pure $ ""
     };
-    let buf = buf.get_sub(0, len.to_I64);
+    let buf = buf.get_sub(0, len.i64);
     pure $ StringEx::from_array(buf)
 };
 
@@ -341,7 +341,7 @@ mkdir = |path, mode| lift_iofail $ do {
     let res = *path.borrow_c_str_io(|p_path|
         FFI_CALL_IO[CInt mkdir(Ptr, U32), p_path, mode]
     ).lift;
-    if res != 0.to_CInt {
+    if res != 0.c_int {
         throw("mkdir(\"" + path + "\"," + mode.to_string + ") failed!: " + *get_last_error.lift)
     };
     pure()
@@ -358,7 +358,7 @@ rmdir = |path| lift_iofail $ do {
     let res = *path.borrow_c_str_io(|p_path|
         FFI_CALL_IO[CInt rmdir(Ptr), p_path]
     ).lift;
-    if res != 0.to_CInt {
+    if res != 0.c_int {
         throw("rmdir(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
@@ -372,7 +372,7 @@ getcwd = lift_iofail $ do {
     let bufsize = 1024;     // TODO: use PATH_MAX or pathconf
     let buf = Array::fill(bufsize, 0_U8);
     let (buf, res) = *buf.mutate_boxed_io(|p_buf|
-        FFI_CALL_IO[Ptr getcwd(Ptr, CSizeT), p_buf, bufsize.to_CSizeT]
+        FFI_CALL_IO[Ptr getcwd(Ptr, CSizeT), p_buf, bufsize.c_size_t]
     ).lift;
     if res == nullptr {
         throw("getcwd failed!: " + *get_last_error.lift)
@@ -391,7 +391,7 @@ chdir = |path| lift_iofail $ do {
     let res = *path.borrow_c_str_io(|p_path|
         FFI_CALL_IO[CInt chdir(Ptr), p_path]
     ).lift;
-    if res != 0.to_CInt {
+    if res != 0.c_int {
         throw("chdir(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
@@ -435,7 +435,7 @@ creat = |path, mode| lift_iofail $ do {
     let fd = *path.borrow_c_str_io(|p_path|
         FFI_CALL_IO[CInt creat(Ptr, U32), p_path, mode]
     ).lift;
-    if fd == -1.to_CInt {
+    if fd == -1.c_int {
         throw("creat(\"" + path + "\"," + mode.to_string + ") failed!: " + *get_last_error.lift)
     };
     pure $ fd
@@ -457,7 +457,7 @@ symlink = |target, link_path| lift_iofail $ do {
             FFI_CALL_IO[CInt symlink(Ptr, Ptr), p_target, p_link_path]
         )
     ).lift;
-    if res == -1.to_CInt {
+    if res == -1.c_int {
         throw("symlink(\"" + target + "\",\"" + link_path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
@@ -476,7 +476,7 @@ unlink = |path| lift_iofail $ do {
     let res = *path.borrow_c_str_io(|p_path|
         FFI_CALL_IO[CInt unlink(Ptr), p_path]
     ).lift;
-    if res == -1.to_CInt {
+    if res == -1.c_int {
         throw("unlink(\"" + path + "\") failed!: " + *get_last_error.lift)
     };
     pure()
@@ -525,11 +525,11 @@ pipe: [m: MonadIOFail] m (CInt, CInt);
 pipe = lift_iofail $ do {
     pure();;    // make it lazy
     clear_errno.lift;;
-    let pipefd: Array CInt = Array::fill(2, 0.to_CInt);
+    let pipefd: Array CInt = Array::fill(2, 0.c_int);
     let res = *pipefd.borrow_boxed_io(|p_pipefd|
         FFI_CALL_IO[CInt pipe(Ptr), p_pipefd]
     ).lift;
-    if res == -1.to_CInt {
+    if res == -1.c_int {
         throw("pipe failed!: " + *get_last_error.lift)
     };
     let read_fd = pipefd.@(0);
@@ -580,7 +580,7 @@ _open_temp_file = |filepath_prefix| lift_iofail $ do {
     let (filepath_bytes, fd) = *template_bytes.mutate_boxed_io(|p_template|
         FFI_CALL_IO[CInt mkstemp(Ptr), p_template]
     ).lift;
-    if fd == -1.to_CInt {
+    if fd == -1.c_int {
         throw("mkstemp(\"" + filepath_prefix + "\") failed!: " + *get_last_error.lift)
     };
     let filepath = filepath_bytes.from_bytes.as_ok;
@@ -640,13 +640,13 @@ set_file_position = |handle, offset, whence| lift_iofail $ do {
         seek_cur() => 1,
         seek_end() => 2,
     };
-    let whence = FFI_CALL[CInt minilib_iofs_convert_seek_whence(CInt), whence.to_CInt];
+    let whence = FFI_CALL[CInt minilib_iofs_convert_seek_whence(CInt), whence.c_int];
     let file_ptr = *handle.get_file_ptr.lift;
     if file_ptr == nullptr {
         throw("seek_file_position failed!: the IOHandle is already closed.")
     };
     let res = *FFI_CALL_IO[CInt fseek(Ptr, CLong, CInt), file_ptr, offset, whence].lift;
-    if res == -1.to_CInt {
+    if res == -1.c_int {
         throw("fseek(" + file_ptr.to_string + "," + offset.to_string + "," + whence.to_string + ") failed!: " + *get_last_error.lift)
     };
     pure()
@@ -665,7 +665,7 @@ get_file_position = |handle| lift_iofail $ do {
         throw("get_file_position failed!: the IOHandle is already closed.")
     };
     let offset = *FFI_CALL_IO[CLong ftell(Ptr), file_ptr].lift;
-    if offset == -1.to_CLong {
+    if offset == -1.c_long {
         throw("ftell(" + file_ptr.to_string + ") failed!: " + *get_last_error.lift)
     };
     pure $ offset
