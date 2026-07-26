@@ -82,7 +82,7 @@ namespace FileStat {
         pure();; // make it lazy
         clear_errno.lift;;
         let data = Array::fill(16, 0_U64);
-        let (data, res) = *data.mutate_boxed_io(|p_data|
+        let (data, res) = *data.mutate_elements_io(|p_data|
             file_path.borrow_c_str_io(|p_filepath|
                 FFI_CALL_IO[CInt minilib_iofs_stat_or_lstat(Ptr, Ptr, CInt), p_filepath, p_data, 
                     if is_stat { 1.c_int } else { 0.c_int }
@@ -283,7 +283,7 @@ _readdir = |dir_handle| lift_iofail $ do {
     let bufsize = 256;
     let buf = Array::fill(bufsize, 0_U8);
     let (buf, len) = *dir_handle.@dtor.borrow_io(|dirp|
-        buf.mutate_boxed_io(|p_buf|
+        buf.mutate_elements_io(|p_buf|
             FFI_CALL_IO[CSizeT minilib_iofs_readdir(Ptr, Ptr, CSizeT), dirp, p_buf, bufsize.c_size_t]
         )
     ).lift;
@@ -371,7 +371,7 @@ getcwd = lift_iofail $ do {
     clear_errno.lift;;
     let bufsize = 1024;     // TODO: use PATH_MAX or pathconf
     let buf = Array::fill(bufsize, 0_U8);
-    let (buf, res) = *buf.mutate_boxed_io(|p_buf|
+    let (buf, res) = *buf.mutate_elements_io(|p_buf|
         FFI_CALL_IO[Ptr getcwd(Ptr, CSizeT), p_buf, bufsize.c_size_t]
     ).lift;
     if res == nullptr {
@@ -526,7 +526,7 @@ pipe = lift_iofail $ do {
     pure();;    // make it lazy
     clear_errno.lift;;
     let pipefd: Array CInt = Array::fill(2, 0.c_int);
-    let res = *pipefd.borrow_boxed_io(|p_pipefd|
+    let res = *pipefd.borrow_elements_io(|p_pipefd|
         FFI_CALL_IO[CInt pipe(Ptr), p_pipefd]
     ).lift;
     if res == -1.c_int {
@@ -577,7 +577,7 @@ _open_temp_file = |filepath_prefix| lift_iofail $ do {
     pure();;    // make it lazy
     clear_errno.lift;;
     let template_bytes = (filepath_prefix + "XXXXXX").get_bytes;
-    let (filepath_bytes, fd) = *template_bytes.mutate_boxed_io(|p_template|
+    let (filepath_bytes, fd) = *template_bytes.mutate_elements_io(|p_template|
         FFI_CALL_IO[CInt mkstemp(Ptr), p_template]
     ).lift;
     if fd == -1.c_int {

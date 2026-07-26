@@ -24,7 +24,7 @@ DEPRECATED[uname, "Use `get_uname` instead."];
 uname: UName;
 uname = (
     let buf = Array::fill(4096, 0_U8);
-    let res = buf.borrow_boxed(|p_buf|
+    let res = buf.borrow_elements(|p_buf|
         FFI_CALL[I32 uname(Ptr), p_buf]
     );
     if res != 0_I32 {
@@ -83,8 +83,8 @@ get_uname = lift_iofail $ from_io_result $ do {
     let names_size = 5;
     let names = Array::fill(names_size, nullptr);
 
-    buf.borrow_boxed_io(|p_buf|
-        let (names, res) = *names.mutate_boxed_io(|p_names|
+    buf.borrow_elements_io(|p_buf|
+        let (names, res) = *names.mutate_elements_io(|p_names|
             FFI_CALL_IO[CInt minilib_io_platform_uname(Ptr, CSizeT, Ptr, CSizeT),
                 p_buf, bufsize.c_size_t,
                 p_names, names_size.c_size_t

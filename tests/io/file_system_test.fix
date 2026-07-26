@@ -327,10 +327,10 @@ test_pipe = (
     let n = 16;
     let input = Array::fill(n, 0_U8);
     let output = Array::from_map(n, |i| i.u8);
-    let wsize = *output.borrow_boxed_io(|p_output|
+    let wsize = *output.borrow_elements_io(|p_output|
         FFI_CALL_IO[CSizeT write(CInt, Ptr, CSizeT), write_fd.c_int, p_output, n.c_size_t]
     ).lift;
-    let (input, rsize) = *input.mutate_boxed_io(|p_input|
+    let (input, rsize) = *input.mutate_elements_io(|p_input|
         FFI_CALL_IO[CSizeT read(CInt, Ptr, CSizeT), read_fd.c_int, p_input, n.c_size_t]
     ).lift;
     FFI_CALL_IO[() close(CInt), write_fd.c_int].lift;;
