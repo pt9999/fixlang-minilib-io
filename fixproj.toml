@@ -1,6 +1,6 @@
 [general]
 name = "minilib-io"
-version = "0.8.5"
+version = "0.9.0-alpha.1"
 fix_version = "1.5.0"
 authors = ["pt9999"]
 license = "MIT"
@@ -30,11 +30,11 @@ files = [
 
 [[dependencies]]
 name = "minilib-binary"
-version = "0.6.4"
+version = "0.7.0"
 # path = "../fixlang-minilib-binary"
 git = { url = "https://github.com/pt9999/fixlang-minilib-binary.git" }
 
 [[test_dependencies]]
 name = "asynctask"
-version = "1.1.5"
+version = "2.0.0"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
