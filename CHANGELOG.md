@@ -1,3 +1,8 @@
+## 0.9.1
+### Changed
+- Merged PR#5 (thanks to tttmmmyyyy san).
+  - Enabled multi-threading for this project's own tests.
+
 ## 0.9.0
 ### Changed
 - Merged PR#4 (thanks to tttmmmyyyy san).
