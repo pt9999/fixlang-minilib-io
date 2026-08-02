@@ -1,6 +1,6 @@
 # Minilib.IO.FileSystem
 
-Defined in minilib-io@0.9.0
+Defined in minilib-io@0.9.1
 
 File system module. For example, finding files, checks if file or directory exists,
 getting file size and last modified time.
