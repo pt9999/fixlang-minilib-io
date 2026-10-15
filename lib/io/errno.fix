@@ -1,7 +1,8 @@
 // Functions for `errno` which is set by system calls and some library functions.
 module Minilib.IO.Errno;
 
-import Minilib.Monad.IO;
+import Minilib.Monad.IO::{MonadIO, MonadIOIF::lift_io};
+import Std::{I32, String, FFI::get_errno, String::unsafe_from_c_str_ptr_io};
 
 // Gets the error message corresponding to the last error number.
 get_last_error: [m: MonadIO] m String;

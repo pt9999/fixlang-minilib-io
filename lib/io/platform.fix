@@ -1,11 +1,17 @@
 // Get kernel information such as system name, machine archtecture.
 module Minilib.IO.Platform;
 
-import Minilib.Common.Common;
-import Minilib.Encoding.Binary;
-import Minilib.IO.Errno;
-import Minilib.Monad.IO;
-import Minilib.Text.StringEx;
+import Minilib.Encoding.Binary::{ByteOrder, ByteOrder::{big_endian, little_endian}};
+import Minilib.IO.Errno::get_last_error;
+import Minilib.Monad.IO::{MonadIOFail, MonadIOFailIF::lift_iofail};
+import Minilib.Text.StringEx::from_array;
+import Std::{
+    loop, undefined, String, 
+    Array::{@, @size, borrow_elements, borrow_elements_io, fill, get_sub, mutate_elements_io, push_back}, 
+    IO::IOFail::from_io_result, LoopState::{break, continue}, Monad::pure, 
+    Option::{as_some, is_none, map_or, none, some}, Result::{err, ok}, String::unsafe_from_c_str_ptr_io, 
+    ToBytes::to_bytes, ToCSizeT::c_size_t, ToI64::i64, ToString::to_string
+};
 
 // A type of name and information of current kernel.
 type UName = unbox struct {

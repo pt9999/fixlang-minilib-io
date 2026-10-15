@@ -1,7 +1,11 @@
 module SignalTest;
 
-import Minilib.IO.Signal;
-import Minilib.Testing.UnitTest;
+import Minilib.IO.Signal::{kill_process, set_signal_handler};
+import Minilib.Testing.UnitTest::{assert_equal, make_test, run_test_driver, TestCase};
+import Std::{
+    I64, IO, Functor::map, IO::{println, IOFail::{lift, to_result}}, Monad::pure, Result::err, 
+    ToI64::i64, ToString::to_string
+};
 
 getpid: IO I64;
 getpid = (

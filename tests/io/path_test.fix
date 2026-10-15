@@ -1,8 +1,8 @@
 module PathTest;
 
-import Minilib.IO.Path;
-import Minilib.Text.StringEx;
-import Minilib.Testing.UnitTest;
+import Minilib.IO.Path::{basename, dirname, join_paths, relativize};
+import Minilib.Testing.UnitTest::{assert_equal, make_table_test, run_test_driver, TestCase, TestCase::empty};
+import Std::{IO, Result::{err, ok}};
 
 test_join_paths: TestCase;
 test_join_paths = (

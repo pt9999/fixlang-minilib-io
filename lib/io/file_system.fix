@@ -2,13 +2,26 @@
 // getting file size and last modified time.
 module Minilib.IO.FileSystem;
 
-import Time;
-
-import Minilib.IO.Errno;
-import Minilib.IO.Path;
-import Minilib.Monad.Error;
-import Minilib.Monad.IO;
-import Minilib.Text.StringEx;
+import Minilib.IO.Errno::get_last_error;
+import Minilib.IO.Path::dirname;
+import Minilib.Monad.Error::{finally, to_result_t};
+import Minilib.Monad.IO::{MonadIO, MonadIOFail, MonadIOFailIF::lift_iofail, MonadIOIF::lift_io};
+import Minilib.Text.StringEx::from_array;
+import Std::{
+    loop_m, Array, Bool, I64, Option, Path, Ptr, String, U32, U64, 
+    Array::{@, append, borrow_elements_io, empty, fill, get_sub, mutate_elements_io, push_back, sort_by, to_iter}, 
+    FFI::{clear_errno, get_errno, CInt, CLong, Destructor, Destructor::{borrow_io, make}}, 
+    FromBytes::from_bytes, 
+    IO::{
+        close_file, IOFail, IOHandle, IOFail::{lift, throw, to_result}, 
+        IOHandle::{from_file_ptr, get_file_ptr}
+    }, 
+    Iterator::loop_iter_m, LoopState::{break_m, continue_m}, Monad::{pure, when}, 
+    Option::{as_some, is_some}, Result::{as_ok, is_err, is_ok}, 
+    String::{borrow_c_str_io, ends_with, get_bytes, unsafe_from_c_str_ptr_io}, ToCInt::c_int, 
+    ToCLong::c_long, ToCSizeT::c_size_t, ToI64::i64, ToString::to_string, ToU32::u32
+};
+import Time::Time;
 
 //--------------------------------------------------------------------------
 //  File status

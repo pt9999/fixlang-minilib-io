@@ -1,12 +1,12 @@
 module Test;
 
-import Minilib.Testing.UnitTest;
-
-import ErrnoTest;
-import FileSystemTest;
-import PathTest;
-import PlatformTest;
-import SignalTest;
+import ErrnoTest::main;
+import FileSystemTest::main;
+import Minilib.Testing.UnitTest::{TestSuite, TestSuite::run};
+import PathTest::main;
+import PlatformTest::main;
+import SignalTest::main;
+import Std::IO;
 
 testsuite: TestSuite;
 testsuite = [

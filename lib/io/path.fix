@@ -1,7 +1,13 @@
 // File Path handling, such as joining paths and retrieving directory name.
 module Minilib.IO.Path;
 
-import Minilib.Text.StringEx;
+import Minilib.Text.StringEx::find_last_byte;
+import Std::{
+    loop, Array, Bool, ErrMsg, Result, String, U8, Array::{@, @size, append, fill, get_sub, to_iter}, 
+    Iterator::{filter, fold, to_array}, LoopState::{break, continue}, Option::{as_some, is_none}, 
+    Result::{err, ok}, 
+    String::{@size, get_sub, is_empty, join, split, starts_with, strip_first_bytes, strip_last_bytes}
+};
 
 // Checks if the byte is a path separator. Currently only '/' is supported.
 is_path_sep: U8 -> Bool;

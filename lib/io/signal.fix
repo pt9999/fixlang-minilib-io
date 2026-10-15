@@ -1,8 +1,12 @@
 // Unix signal handling
 module Minilib.IO.Signal;
 
-import Minilib.IO.Errno;
-import Minilib.Monad.IO;
+import Minilib.IO.Errno::get_last_error;
+import Minilib.Monad.IO::{MonadIOFail, MonadIOFailIF::lift_iofail};
+import Std::{
+    Array, I64, String, IO::IOFail::{lift, throw}, Monad::pure, String::borrow_c_str_io, ToCInt::c_int, 
+    ToI64::i64, ToString::to_string
+};
 
 // An array of supported signal names.
 signal_names: Array String;

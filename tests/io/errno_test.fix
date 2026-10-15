@@ -1,7 +1,8 @@
 module ErrnoTest;
 
-import Minilib.IO.Errno;
-import Minilib.Testing.UnitTest;
+import Minilib.IO.Errno::{get_last_error, strerror};
+import Minilib.Testing.UnitTest::{assert_equal, make_test, run_test_driver, TestCase, TestCase::empty};
+import Std::{IO, Functor::map, IO::{open_file, IOFail::{lift, try}}, Monad::pure};
 
 test_get_last_error: TestCase;
 test_get_last_error = (

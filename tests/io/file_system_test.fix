@@ -1,14 +1,37 @@
 module FileSystemTest;
 
-import AsyncTask;
-
-import Minilib.Common.IOEx;
-import Minilib.Common.TimeEx;
-import Minilib.IO.FileSystem;
-import Minilib.Monad.Error;
-import Minilib.Text.StringEx;
-import Minilib.Testing.UnitTest;
-import Minilib.Trait.Traversable;
+import AsyncTask::AsyncIOTask::{get, make};
+import Minilib.Common.IOEx::fflush;
+import Minilib.Common.TimeEx::usleep;
+import Minilib.IO.FileSystem::{
+    chdir, creat, directory_exists, fdopen, file_exists, find_files, get_file_position, getcwd, list_dir, 
+    make_dirs, mkdir, open_pipe, open_temp_file, pipe, realpath, rmdir, set_file_position, symlink, 
+    unlink, unlink_if_exists, with_temp_file, 
+    FileStat::{
+        is_dir, is_file, is_symbolic_link, lstat, st_atime, st_blksize, st_blocks, st_ctime, st_dev, st_gid, 
+        st_ino, st_mode, st_mtime, st_nlink, st_rdev, st_size, st_uid, stat
+    }, 
+    SeekWhence::{seek_cur, seek_end, seek_set}
+};
+import Minilib.Monad.Error::finally;
+import Minilib.Testing.UnitTest::{
+    assert_equal, assert_false, assert_true, make_table_test, make_test, run_test_driver, TestCase, 
+    TestCase::empty
+};
+import Minilib.Text.StringEx::Format::format;
+import Minilib.Trait.Traversable::foreach_m;
+import Std::{
+    loop_m, Bool, IO, String, 
+    Array::{borrow_elements_io, empty, fill, find_by, from_map, mutate_elements_io, push_back, to_iter}, 
+    IO::{
+        close_file, eprintln, flush, println, read_file_string, read_line, write_file_string, write_string, 
+        IOFail, IOFail::{from_result, lift, to_result, try}, IOHandle::get_file_ptr
+    }, 
+    Iterator::{loop_iter_m, range}, LoopState::{break_m, continue_m}, Monad::{pure, unless, when}, 
+    Option::{is_some, none, some}, Result::{as_err, as_ok, err, is_err, ok}, 
+    String::{@size, ends_with, find, join, starts_with, strip_last_newlines}, ToCInt::c_int, 
+    ToCLong::c_long, ToCSizeT::c_size_t, ToString::to_string, ToU8::u8
+};
 
 test_fdopen: TestCase;
 test_fdopen = (
