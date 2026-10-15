@@ -1,3 +1,8 @@
+## 0.10.0
+### Changed
+- fixproj.toml: Bumped `fix_version` to 1.6.0. Depends on minilib-common@0.15.0,
+  minilib-binary@0.8.0, asynctask@2.0.1.
+
 ## 0.9.2
 ### Changed
 - Added indirect dependencies.
