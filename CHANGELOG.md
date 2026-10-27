@@ -1,6 +1,8 @@
 ## 0.10.1
 ### Changed
 - Added `-s` option and `CFLAGS=-Wall` option to the `make` command that builds `lib.o`.
+- Changed following test code.
+  - platform_test.fix: Changed `println` to `eprintln` to avoid misarrangement of the test output.
 
 ## 0.10.0
 ### Changed

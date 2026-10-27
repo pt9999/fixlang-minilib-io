@@ -3,19 +3,19 @@ module PlatformTest;
 import Minilib.Encoding.Binary::ByteOrder::is_little_endian;
 import Minilib.IO.Platform::{byte_order, get_uname, UName::{@machine, @nodename, @release, @sysname, @version}};
 import Minilib.Testing.UnitTest::{assert_true, make_test, run_test_driver, TestCase, TestCase::empty};
-import Std::{IO, IO::{println, IOFail::lift}, Monad::{pure, when}};
+import Std::{IO, IO::{eprintln, IOFail::lift}, Monad::{pure, when}};
 
 test_get_uname: TestCase;
 test_get_uname = (
     make_test("get_uname") $ |_| (
         let uname = *get_uname;
         when(true,
-            println("uname:");;
-            println("  sysname=" + uname.@sysname);;
-            println("  nodename=" + uname.@nodename);;
-            println("  release=" + uname.@release);;
-            println("  version=" + uname.@version);;
-            println("  machine=" + uname.@machine);;
+            eprintln("uname:");;
+            eprintln("  sysname=" + uname.@sysname);;
+            eprintln("  nodename=" + uname.@nodename);;
+            eprintln("  release=" + uname.@release);;
+            eprintln("  version=" + uname.@version);;
+            eprintln("  machine=" + uname.@machine);;
             pure()
         ).lift;;
         assert_true("sysname", uname.@sysname != "");;
